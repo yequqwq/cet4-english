@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CET-4 数据层测试</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 40px auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    .test-section {
+      background: white;
+      padding: 20px;
+      margin-bottom: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    h2 {
+      color: #333;
+      border-bottom: 2px solid #667eea;
+      padding-bottom: 10px;
+    }
+    button {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 5px;
+      cursor: pointer;
+      margin: 5px;
+    }
+    button:hover {
+      opacity: 0.9;
+    }
+    pre {
+      background: #f8f9fa;
+      padding: 15px;
+      border-radius: 5px;
+      overflow-x: auto;
+      font-size: 13px;
+    }
+    .success {
+      color: #28a745;
+    }
+    .error {
+      color: #dc3545;
+    }
+  </style>
+</head>
+<body>
+  <h1>CET-4 数据层测试页面</h1>
+
+  <div class="test-section">
+    <h2>1. 基础 API 测试</h2>
+    <button onclick="testInit()">Data.init()</button>
+    <button onclick="testGet()">Data.get()</button>
+    <button onclick="testSet()">Data.set()</button>
+    <button onclick="testGetAll()">查看完整数据</button>
+    <div id="result1"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>2. 单词管理</h2>
+    <button onclick="testGetMasteredCount()">已掌握单词数</button>
+    <button onclick="testGetWordsByStatus('new')">新单词</button>
+    <button onclick="testGetWordsByStatus('mastered')">已掌握</button>
+    <button onclick="testGetWordsByStatus('learning')">学习中</button>
+    <div id="result2"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>3. 错题本</h2>
+    <button onclick="testAddWrong('w001')">添加 w001 到错题本</button>
+    <button onclick="testRemoveWrong('w001')">从错题本移除 w001</button>
+    <button onclick="testGetWrongBook()">查看错题本</button>
+    <div id="result3"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>4. 任务管理</h2>
+    <button onclick="testCompleteTask(1)">完成任务 1</button>
+    <button onclick="testUpdateTaskProgress(1, 10)">更新任务 1 进度为 10</button>
+    <button onclick="testGetTodayTasks()">获取今日任务</button>
+    <div id="result4"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>5. 学习记录</h2>
+    <button onclick="testRecordTime(15)">记录 15 分钟学习</button>
+    <button onclick="testGetHistory()">获取学习历史</button>
+    <div id="result5"></div>
+  </div>
+
+  <div class="test-section">
+    <h2>6. 数据导入导出</h2>
+    <button onclick="testExport()">导出数据</button>
+    <button onclick="testReset()">重置数据</button>
+    <div id="result6"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    function showResult(sectionId, html, isError = false) {
+      const el = document.getElementById(sectionId);
+      el.innerHTML = `<pre class="${isError ? 'error' : 'success'}">${html}</pre>`;
+    }
+
+    // 基础 API 测试
+    function testInit() {
+      const data = Data.init();
+      showResult('result1', '初始化成功!\n已加载 ' + data.words.length + ' 个单词');
+    }
+
+    function testGet() {
+      const user = Data.get('user');
+      showResult('result1', '用户信息:\n' + JSON.stringify(user, null, 2));
+    }
+
+    function testSet() {
+      Data.set('user.name', '测试用户');
+      const user = Data.get('user');
+      showResult('result1', '设置成功!\n' + JSON.stringify(user, null, 2));
+    }
+
+    function testGetAll() {
+      const all = Data.get();
+      showResult('result1', JSON.stringify(all, null, 2));
+    }
+
+    // 单词管理测试
+    function testGetMasteredCount() {
+      const count = Data.getMasteredCount();
+      showResult('result2', '已掌握单词数: ' + count);
+    }
+
+    function testGetWordsByStatus(status) {
+      const words = Data.getWordsByStatus(status);
+      const display = words.slice(0, 5).map(w =>
+        `${w.word} - ${w.meaning} [${w.status}]`
+      ).join('\n');
+      showResult('result2', `状态: ${status}\n共 ${words.length} 个\n前5个:\n${display}`);
+    }
+
+    // 错题本测试
+    function testAddWrong(wordId) {
+      Data.addWrong(wordId);
+      const wrongBook = Data.getWrongBook();
+      showResult('result3', `已添加 ${wordId} 到错题本\n错题本数量: ${wrongBook.length}`);
+    }
+
+    function testRemoveWrong(wordId) {
+      Data.removeWrong(wordId);
+      const wrongBook = Data.getWrongBook();
+      showResult('result3', `已从错题本移除 ${wordId}\n错题本数量: ${wrongBook.length}`);
+    }
+
+    function testGetWrongBook() {
+      const wrongBook = Data.getWrongBook();
+      const display = wrongBook.map(w =>
+        `${w.word} - ${w.meaning}`
+      ).join('\n') || '空';
+      showResult('result3', `错题本 (${wrongBook.length}):\n${display}`);
+    }
+
+    // 任务管理测试
+    function testCompleteTask(taskId) {
+      Data.completeTask(taskId);
+      const tasks = Data.getTodayTasks();
+      const task = tasks.find(t => t.id === taskId);
+      showResult('result4', `任务 ${taskId} 已完成!\n状态: ${task.completed}\n进度: ${task.progress}/${task.target}`);
+    }
+
+    function testUpdateTaskProgress(taskId, progress) {
+      Data.updateTaskProgress(taskId, progress);
+      const tasks = Data.getTodayTasks();
+      const task = tasks.find(t => t.id === taskId);
+      showResult('result4', `任务 ${taskId} 进度已更新!\n进度: ${task.progress}/${task.target}`);
+    }
+
+    function testGetTodayTasks() {
+      const tasks = Data.getTodayTasks();
+      const display = tasks.map(t =>
+        `[${t.completed ? '✓' : '○'}] ${t.title} - ${t.progress}/${t.target}`
+      ).join('\n');
+      showResult('result4', '今日任务:\n' + display);
+    }
+
+    // 学习记录测试
+    function testRecordTime(minutes) {
+      Data.recordTime(minutes);
+      const user = Data.get('user');
+      showResult('result5', `已记录 ${minutes} 分钟学习\n今日学习: ${user.todayMinutes} 分钟\n累计学习: ${user.totalMinutes} 分钟`);
+    }
+
+    function testGetHistory() {
+      const history = Data.getHistory(7);
+      const display = history.map(h =>
+        `${h.date}: ${h.minutes}分钟, ${h.wordsLearned}单词`
+      ).join('\n') || '暂无历史记录';
+      showResult('result5', '学习历史 (最近7天):\n' + display);
+    }
+
+    // 数据导入导出测试
+    function testExport() {
+      const exported = Data.export();
+      console.log('导出数据:', exported);
+      showResult('result6', '数据已导出到控制台\n长度: ' + exported.length + ' 字符');
+    }
+
+    function testReset() {
+      if (confirm('确定要重置所有数据吗?')) {
+        Data.reset();
+        showResult('result6', '数据已重置!');
+      }
+    }
+  </script>
+</body>
+</html>

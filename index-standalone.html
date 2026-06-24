@@ -1,0 +1,1074 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CET-4 英语学习系统</title>
+  <link rel="stylesheet" href="src/index.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* 页面切换动画 */
+    .page-section {
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity 0.3s ease, transform 0.3s ease;
+    }
+    .page-section.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .page-section.hidden {
+      display: none;
+    }
+
+    /* 任务卡片样式 */
+    .task-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    .task-item.completed {
+      opacity: 0.7;
+    }
+    .task-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 8px;
+    }
+    .task-title {
+      color: white;
+      font-weight: 500;
+    }
+    .task-status {
+      color: rgba(255,255,255,0.6);
+      font-size: 14px;
+    }
+    .task-progress {
+      height: 6px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-bottom: 8px;
+    }
+    .task-progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+    .task-action {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .task-action:hover {
+      opacity: 0.9;
+    }
+
+    /* 单词卡片翻转效果 */
+    .word-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 24px;
+      text-align: center;
+      min-height: 200px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+      position: relative;
+    }
+    .word-card:hover {
+      transform: scale(1.02);
+    }
+    .word-card .word {
+      font-size: 32px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 8px;
+    }
+    .word-card .phonetic {
+      font-size: 16px;
+      color: rgba(255,255,255,0.6);
+      margin-bottom: 16px;
+    }
+    .word-card .meaning {
+      font-size: 18px;
+      color: rgba(255,255,255,0.8);
+    }
+    .word-card .example {
+      font-size: 14px;
+      color: rgba(255,255,255,0.5);
+      margin-top: 12px;
+      font-style: italic;
+    }
+
+    /* 按钮组 */
+    .btn-group {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      flex: 1;
+    }
+    .btn-success {
+      background: linear-gradient(135deg, #11998e, #38ef7d);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      flex: 1;
+    }
+    .btn-danger {
+      background: linear-gradient(135deg, #eb3349, #f45c43);
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      flex: 1;
+    }
+
+    /* 单词学习页面特定样式 */
+    #page-vocabulary {
+      padding: 20px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+
+    .vocab-header {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .progress-info {
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(10px);
+      border-radius: 15px;
+      padding: 15px;
+      margin-bottom: 20px;
+    }
+
+    /* 动作按钮组 - 居中、有间距、圆角 */
+    .action-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      margin: 30px auto;
+      max-width: 400px;
+    }
+    .action-buttons button {
+      flex: 1;
+      padding: 15px 30px;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .action-buttons button:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+    }
+    .action-buttons button:active {
+      transform: translateY(0);
+    }
+
+    #btn-unknown {
+      background: linear-gradient(135deg, #ff6b6b, #ee5a5a);
+      color: white;
+    }
+    #btn-known {
+      background: linear-gradient(135deg, #51cf66, #40c057);
+      color: white;
+    }
+
+    /* 底部统计区域 */
+    .vocab-stats {
+      display: flex;
+      justify-content: center;
+      gap: 40px;
+      margin-top: 30px;
+      text-align: center;
+    }
+    .vocab-stats .stat-item {
+      background: rgba(255,255,255,0.1);
+      padding: 15px 25px;
+      border-radius: 12px;
+      backdrop-filter: blur(10px);
+    }
+
+    /* 进度条 */
+    .progress-bar {
+      width: 100%;
+      height: 8px;
+      background: rgba(255,255,255,0.1);
+      border-radius: 4px;
+      overflow: hidden;
+      margin-top: 16px;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea, #764ba2);
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+
+    /* 快速入口网格 */
+    .quick-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .quick-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.2s ease;
+    }
+    .quick-item:hover {
+      transform: translateY(-2px);
+      background: rgba(255,255,255,0.15);
+    }
+    .quick-item .icon {
+      font-size: 24px;
+      margin-bottom: 8px;
+    }
+    .quick-item .label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.8);
+    }
+
+    /* 错题本列表 */
+    .wrong-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .wrong-item {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .wrong-item .word {
+      font-size: 18px;
+      font-weight: 600;
+      color: white;
+      margin-bottom: 4px;
+    }
+    .wrong-item .meaning {
+      color: rgba(255,255,255,0.7);
+      font-size: 14px;
+    }
+
+    /* 统计卡片 */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+    .stat-card {
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+      padding: 16px;
+      text-align: center;
+    }
+    .stat-card .value {
+      font-size: 24px;
+      font-weight: 700;
+      color: white;
+    }
+    .stat-card .label {
+      font-size: 12px;
+      color: rgba(255,255,255,0.6);
+      margin-top: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-container">
+    <!-- 侧边栏导航 -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <h1 class="logo">CET-4</h1>
+        <p class="subtitle">四级英语学习</p>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">
+          <span class="nav-icon">🏠</span>
+          <span class="nav-text">首页</span>
+        </a>
+        <a href="#" class="nav-item" data-page="vocabulary">
+          <span class="nav-icon">📚</span>
+          <span class="nav-text">单词学习</span>
+        </a>
+        <a href="#" class="nav-item" data-page="listening">
+          <span class="nav-icon">🎧</span>
+          <span class="nav-text">听力训练</span>
+        </a>
+        <a href="#" class="nav-item" data-page="reading">
+          <span class="nav-icon">📖</span>
+          <span class="nav-text">阅读练习</span>
+        </a>
+        <a href="#" class="nav-item" data-page="writing">
+          <span class="nav-icon">✍️</span>
+          <span class="nav-text">写作翻译</span>
+        </a>
+        <a href="#" class="nav-item" data-page="exam">
+          <span class="nav-icon">📝</span>
+          <span class="nav-text">真题模拟</span>
+        </a>
+        <a href="#" class="nav-item" data-page="games">
+          <span class="nav-icon">🎮</span>
+          <span class="nav-text">互动游戏</span>
+        </a>
+        <a href="#" class="nav-item" data-page="center">
+          <span class="nav-icon">👤</span>
+          <span class="nav-text">学习中心</span>
+        </a>
+        <a href="#" class="nav-item" data-page="wrongbook">
+          <span class="nav-icon">📕</span>
+          <span class="nav-text">错题本</span>
+        </a>
+      </nav>
+    </aside>
+
+    <!-- 主内容区 -->
+    <main class="main-content">
+      <!-- 首页仪表盘 -->
+      <section id="page-dashboard" class="page-section active">
+        <div class="page-header">
+          <h1>欢迎回来，学习者</h1>
+          <p class="page-subtitle">今天的学习进度如何？</p>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="value" id="stat-mastered">0</div>
+            <div class="label">已掌握单词</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-minutes">0</div>
+            <div class="label">学习分钟</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="stat-streak">1</div>
+            <div class="label">连续打卡</div>
+          </div>
+        </div>
+
+        <!-- 今日任务 -->
+        <div class="section-card">
+          <h2 class="section-title">今日任务</h2>
+          <div id="tasks-list">
+            <!-- 任务列表由 JS 动态渲染 -->
+          </div>
+        </div>
+
+        <!-- 快速入口 -->
+        <div class="section-card">
+          <h2 class="section-title">快速入口</h2>
+          <div class="quick-grid">
+            <div class="quick-item" data-action="vocabulary">
+              <div class="icon">📚</div>
+              <div class="label">单词学习</div>
+            </div>
+            <div class="quick-item" data-action="listening">
+              <div class="icon">🎧</div>
+              <div class="label">听力训练</div>
+            </div>
+            <div class="quick-item" data-action="reading">
+              <div class="icon">📖</div>
+              <div class="label">阅读练习</div>
+            </div>
+            <div class="quick-item" data-action="writing">
+              <div class="icon">✍️</div>
+              <div class="label">写作翻译</div>
+            </div>
+            <div class="quick-item" data-action="exam">
+              <div class="icon">📝</div>
+              <div class="label">真题模拟</div>
+            </div>
+            <div class="quick-item" data-action="games">
+              <div class="icon">🎮</div>
+              <div class="label">互动游戏</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 单词学习页面 -->
+      <section id="page-vocabulary" class="page-section hidden">
+        <div class="page-header vocab-header">
+          <h1>单词学习</h1>
+          <p class="page-subtitle">掌握高频词汇，夯实英语基础</p>
+        </div>
+
+        <!-- 进度指示 -->
+        <div class="progress-info">
+          <span id="vocab-progress">0/20</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-bar-fill" id="vocab-progress-bar" style="width: 0%"></div>
+        </div>
+
+        <!-- 单词卡片 -->
+        <div class="word-card" id="word-card">
+          <div class="word" id="current-word">abandon</div>
+          <div class="phonetic" id="current-phonetic">/əˈbændən/</div>
+          <button class="speak-btn" onclick="speakWord(event)" style="position: absolute; top: 15px; right: 15px; background: rgba(255,255,255,0.2); border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; font-size: 18px;">🔊</button>
+          <div class="meaning" id="current-meaning">放弃，遗弃</div>
+          <div class="example" id="current-example">He abandoned his car and ran for help.</div>
+          <div class="translation" id="current-translation" style="display:none">他弃车跑去求救。</div>
+        </div>
+
+        <!-- 操作按钮 - 居中、有间距、圆角 -->
+        <div class="action-buttons">
+          <button id="btn-unknown" onclick="handleDontKnow()">😕 不认识</button>
+          <button id="btn-known" onclick="handleKnow()">😊 认识</button>
+        </div>
+
+        <!-- 底部统计 -->
+        <div class="vocab-stats">
+          <div class="stat-item">
+            <div class="value" id="known-count" style="font-size: 24px; font-weight: bold; color: #51cf66;">0</div>
+            <div class="label" style="color: rgba(255,255,255,0.6);">认识</div>
+          </div>
+          <div class="stat-item">
+            <div class="value" id="unknown-count" style="font-size: 24px; font-weight: bold; color: #ff6b6b;">0</div>
+            <div class="label" style="color: rgba(255,255,255,0.6);">不认识</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 听力训练页面 -->
+      <section id="page-listening" class="page-section hidden">
+        <div class="page-header">
+          <h1>听力训练</h1>
+          <p class="page-subtitle">提升听力能力，攻克英语听力</p>
+        </div>
+
+        <div class="section-card">
+          <div class="audio-player">
+            <button class="play-btn" id="play-btn" onclick="toggleAudio()">▶ 播放</button>
+            <div class="audio-info">
+              <p>Section A: 短对话</p>
+              <p class="audio-tips">点击播放按钮开始听力练习</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h3>听力原文</h3>
+          <p class="article-content">
+            W: I heard you're moving to a new apartment soon.<br>
+            M: Yes, but the new place is much more expensive.<br>
+            W: More expensive? How much more?<br>
+            M: It costs twice as much as I'm paying now.
+          </p>
+        </div>
+
+        <div class="section-card">
+          <h3>问题</h3>
+          <p class="question-text">What can we learn from the conversation?</p>
+          <div class="options">
+            <label class="option-item">
+              <input type="radio" name="q1" value="A"> A. The man is moving to a cheaper place
+            </label>
+            <label class="option-item">
+              <input type="radio" name="q1" value="B"> B. The new apartment costs twice as much
+            </label>
+            <label class="option-item">
+              <input type="radio" name="q1" value="C"> C. The woman will help the man move
+            </label>
+            <label class="option-item">
+              <input type="radio" name="q1" value="D"> D. The man is satisfied with his current place
+            </label>
+          </div>
+          <button class="btn-primary" style="margin-top: 16px;" onclick="submitListening()">提交答案</button>
+        </div>
+      </section>
+
+      <!-- 阅读练习页面 -->
+      <section id="page-reading" class="page-section hidden">
+        <div class="page-header">
+          <h1>阅读练习</h1>
+          <p class="page-subtitle">培养阅读能力，提高理解水平</p>
+        </div>
+
+        <div class="section-card">
+          <h3>文章标题</h3>
+          <p class="article-content">
+            The Importance of Reading<br><br>
+            Reading is one of the most important skills we can develop. It not only helps us acquire knowledge but also improves our thinking abilities. Through reading, we can explore new ideas, cultures, and perspectives that we might never encounter in our daily lives.<br><br>
+            Moreover, regular reading can enhance our vocabulary and language skills. When we read, we are exposed to new words and phrases in context, which helps us understand and remember them better. This natural learning process is far more effective than memorizing word lists.<br><br>
+            In today's digital age, reading has become even more valuable. With the vast amount of information available online, the ability to read critically and efficiently has become essential. Those who can read well have a significant advantage in both their personal and professional lives.
+          </p>
+        </div>
+
+        <div class="section-card">
+          <h3>问题</h3>
+          <p class="question-text">What is the main idea of the passage?</p>
+          <div class="options">
+            <label class="option-item">
+              <input type="radio" name="r1" value="A"> A. Reading is only important in school
+            </label>
+            <label class="option-item">
+              <input type="radio" name="r1" value="B"> B. Reading helps develop many important skills
+            </label>
+            <label class="option-item">
+              <input type="radio" name="r1" value="C"> C. Digital reading is better than print reading
+            </label>
+            <label class="option-item">
+              <input type="radio" name="r1" value="D"> D. People should read more fiction
+            </label>
+          </div>
+          <button class="btn-primary" style="margin-top: 16px;" onclick="submitReading()">提交答案</button>
+        </div>
+      </section>
+
+      <!-- 写作翻译页面 -->
+      <section id="page-writing" class="page-section hidden">
+        <div class="page-header">
+          <h1>写作翻译</h1>
+          <p class="page-subtitle">提升写作能力，表达地道英语</p>
+        </div>
+
+        <div class="section-card">
+          <h3>写作题目</h3>
+          <p class="article-content">
+            <strong>Directions:</strong> For this part, you are allowed 30 minutes to write a composition on the topic "The Importance of Time Management". You should write at least 120 words and base your composition on the outline given below.<br><br>
+            1. 时间管理的重要性<br>
+            2. 如何有效地管理时间<br>
+            3. 我的时间管理方法
+          </p>
+        </div>
+
+        <div class="section-card">
+          <h3>你的作文</h3>
+          <textarea id="writing-input" class="writing-area" placeholder="请在这里输入你的作文..."></textarea>
+          <button class="btn-primary" style="margin-top: 16px;" onclick="submitWriting()">提交评分</button>
+        </div>
+
+        <div class="section-card" id="writing-result" style="display: none;">
+          <h3>评分结果</h3>
+          <div class="score-display">
+            <span class="score-label">得分：</span>
+            <span class="score-value" id="writing-score">0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 真题模拟页面 -->
+      <section id="page-exam" class="page-section hidden">
+        <div class="page-header">
+          <h1>真题模拟</h1>
+          <p class="page-subtitle">熟悉考试题型，检验学习成果</p>
+        </div>
+
+        <div class="exam-timer">
+          <span>剩余时间：</span>
+          <span id="exam-time">25:00</span>
+        </div>
+
+        <div class="section-card">
+          <h3>Part I - Writing</h3>
+          <p class="article-content">
+            Directions: For this part, you are allowed 30 minutes to write a composition on the topic "The Impact of Social Media on College Students". You should write at least 120 words.
+          </p>
+          <textarea class="writing-area" placeholder="请输入你的作文..."></textarea>
+        </div>
+
+        <div class="section-card">
+          <h3>Part II - Reading Comprehension</h3>
+          <p class="question-text">1. What is the main topic of the passage?</p>
+          <div class="options">
+            <label class="option-item">
+              <input type="radio" name="exam1" value="A"> A. Option A
+            </label>
+            <label class="option-item">
+              <input type="radio" name="exam1" value="B"> B. Option B
+            </label>
+            <label class="option-item">
+              <input type="radio" name="exam1" value="C"> C. Option C
+            </label>
+            <label class="option-item">
+              <input type="radio" name="exam1" value="D"> D. Option D
+            </label>
+          </div>
+        </div>
+
+        <button class="btn-primary" style="width: 100%; margin-top: 24px;" onclick="submitExam()">提交试卷</button>
+      </section>
+
+      <!-- 互动游戏页面 -->
+      <section id="page-games" class="page-section hidden">
+        <div class="page-header">
+          <h1>互动游戏</h1>
+          <p class="page-subtitle">趣味学习，轻松掌握</p>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">单词消消乐</h2>
+          <p style="color: rgba(255,255,255,0.7); margin-bottom: 16px;">
+            点击匹配单词和释义，限时60秒，看看你能得多少分！
+          </p>
+          <div class="game-score">
+            <span>得分：<strong id="game-score">0</strong></span>
+            <span>剩余时间：<strong id="game-time">60</strong>秒</span>
+          </div>
+          <div class="match-grid" id="match-grid">
+            <!-- 游戏网格由 JS 动态生成 -->
+          </div>
+          <button class="btn-primary" style="width: 100%; margin-top: 16px;" onclick="startGame()">开始游戏</button>
+        </div>
+      </section>
+
+      <!-- 学习中心页面 -->
+      <section id="page-center" class="page-section hidden">
+        <div class="page-header">
+          <h1>学习中心</h1>
+          <p class="page-subtitle">查看学习数据，了解成长轨迹</p>
+        </div>
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="value" id="center-total">0</div>
+            <div class="label">累计学习(分钟)</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="center-mastered">0</div>
+            <div class="label">已掌握单词</div>
+          </div>
+          <div class="stat-card">
+            <div class="value" id="center-wrong">0</div>
+            <div class="label">错题数</div>
+          </div>
+        </div>
+
+        <div class="section-card">
+          <h2 class="section-title">学习进度</h2>
+          <div class="progress-item">
+            <span>单词学习</span>
+            <div class="progress-bar" style="flex: 1; margin: 0 12px;">
+              <div class="progress-bar-fill" id="progress-words" style="width: 0%"></div>
+            </div>
+            <span id="progress-words-text">0%</span>
+          </div>
+          <div class="progress-item">
+            <span>听力训练</span>
+            <div class="progress-bar" style="flex: 1; margin: 0 12px;">
+              <div class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <span>0%</span>
+          </div>
+          <div class="progress-item">
+            <span>阅读练习</span>
+            <div class="progress-bar" style="flex: 1; margin: 0 12px;">
+              <div class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+            <span>0%</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 错题本页面 -->
+      <section id="page-wrongbook" class="page-section hidden">
+        <div class="page-header">
+          <h1>错题本</h1>
+          <p class="page-subtitle">温故知新，攻克薄弱环节</p>
+        </div>
+
+        <div id="wrongbook-list" class="wrong-list">
+          <!-- 错题列表由 JS 动态渲染 -->
+        </div>
+
+        <div class="empty-state" id="wrongbook-empty">
+          <p>太棒了！暂无错题记录</p>
+          <button class="btn-primary" onclick="showPage('vocabulary')">去学习</button>
+        </div>
+      </section>
+
+      <!-- 底部导航(移动端) -->
+      <nav id="bottom-nav" class="bottom-nav">
+        <a href="#" class="nav-item active" data-page="dashboard">🏠<span>首页</span></a>
+        <a href="#" class="nav-item" data-page="vocabulary">📚<span>单词</span></a>
+        <a href="#" class="nav-item" data-page="games">🎮<span>游戏</span></a>
+        <a href="#" class="nav-item" data-page="center">👤<span>我的</span></a>
+      </nav>
+    </main>
+  </div>
+
+  <!-- 加载脚本 -->
+  <script src="js/data.js"></script>
+  <script src="js/router.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- 页面特定脚本 -->
+  <script>
+    // 单词学习相关
+    let currentWordIndex = 0;
+    let studyWords = [];
+    let knownCount = 0;
+    let unknownCount = 0;
+    let isCardFlipped = false;
+
+    function initVocab() {
+      studyWords = Data.getWordsByStatus('new').slice(0, 20);
+      if (studyWords.length === 0) {
+        studyWords = Data.getWordsByStatus('learning').slice(0, 20);
+      }
+      if (studyWords.length === 0) {
+        studyWords = Data.get().words.slice(0, 20);
+      }
+      currentWordIndex = 0;
+      knownCount = 0;
+      unknownCount = 0;
+      updateWordCard();
+      updateVocabStats();
+    }
+
+    function updateWordCard() {
+      if (currentWordIndex >= studyWords.length) {
+        showVocabSummary();
+        return;
+      }
+      const word = studyWords[currentWordIndex];
+      document.getElementById('current-word').textContent = word.word;
+      document.getElementById('current-phonetic').textContent = word.phonetic;
+      document.getElementById('current-meaning').textContent = word.meaning;
+      document.getElementById('current-example').textContent = word.example;
+      document.getElementById('vocab-progress').textContent = `${currentWordIndex + 1}/${studyWords.length}`;
+      document.getElementById('vocab-progress-bar').style.width = `${((currentWordIndex + 1) / studyWords.length) * 100}%`;
+
+      // 重置卡片状态
+      isCardFlipped = false;
+      const card = document.getElementById('word-card');
+      const translation = document.getElementById('current-translation');
+      if (card) {
+        card.style.transform = 'rotateY(0deg)';
+      }
+      if (translation) {
+        translation.style.display = 'none';
+      }
+    }
+
+    function handleKnow() {
+      if (currentWordIndex < studyWords.length) {
+        const word = studyWords[currentWordIndex];
+        Data.updateWordStatus(word.id, 'mastered');
+        knownCount++;
+        currentWordIndex++;
+        updateWordCard();
+        updateVocabStats();
+        updateTaskProgress(1, knownCount + unknownCount);
+      }
+    }
+
+    function handleDontKnow() {
+      if (currentWordIndex < studyWords.length) {
+        const word = studyWords[currentWordIndex];
+        Data.addWrong(word.id);
+        Data.updateWordStatus(word.id, 'learning');
+        unknownCount++;
+        currentWordIndex++;
+        updateWordCard();
+        updateVocabStats();
+        updateTaskProgress(1, knownCount + unknownCount);
+      }
+    }
+
+    function updateVocabStats() {
+      document.getElementById('known-count').textContent = knownCount;
+      document.getElementById('unknown-count').textContent = unknownCount;
+    }
+
+    function showVocabSummary() {
+      document.getElementById('current-word').textContent = '学习完成！';
+      document.getElementById('current-phonetic').textContent = '';
+      document.getElementById('current-meaning').textContent = `认识: ${knownCount} | 不认识: ${unknownCount}`;
+      document.getElementById('current-example').textContent = '点击下方按钮继续学习';
+      completeTask(1);
+      recordStudy(10, knownCount);
+    }
+
+    // 单词卡片点击翻转（点击按钮不翻转，只播放音频）
+    const card = document.getElementById('word-card');
+    card?.addEventListener('click', (e) => {
+      // 如果点击的是按钮，不要翻转（只播放音频）
+      if (e.target.closest('.speak-btn')) return;
+
+      isCardFlipped = !isCardFlipped;
+      card.style.transform = isCardFlipped ? 'rotateY(180deg)' : 'rotateY(0deg)';
+    });
+
+    // 播放单词音频
+    function speakWord(event) {
+      event.stopPropagation();
+      const word = document.getElementById('current-word').textContent;
+      if (word && word !== '学习完成！') {
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+        speechSynthesis.speak(utterance);
+      }
+    }
+
+    // 听力相关
+    let isPlaying = false;
+
+    function toggleAudio() {
+      const btn = document.getElementById('play-btn');
+      isPlaying = !isPlaying;
+      btn.textContent = isPlaying ? '⏸ 暂停' : '▶ 播放';
+      if (isPlaying) {
+        // 使用 Web Speech API 朗读
+        const utterance = new SpeechSynthesisUtterance('I heard you are moving to a new apartment soon. Yes, but the new place is much more expensive.');
+        utterance.lang = 'en-US';
+        speechSynthesis.speak(utterance);
+        utterance.onend = () => {
+          isPlaying = false;
+          btn.textContent = '▶ 播放';
+        };
+      } else {
+        speechSynthesis.cancel();
+      }
+    }
+
+    function submitListening() {
+      const selected = document.querySelector('input[name="q1"]:checked');
+      if (selected) {
+        if (selected.value === 'B') {
+          alert('✅ 回答正确！');
+        } else {
+          alert('❌ 回答错误，正确答案是 B。');
+          Data.addWrong(1);
+        }
+        updateTaskProgress(2, 1);
+        completeTask(2);
+      } else {
+        alert('请选择一个答案');
+      }
+    }
+
+    // 阅读相关
+    function submitReading() {
+      const selected = document.querySelector('input[name="r1"]:checked');
+      if (selected) {
+        if (selected.value === 'B') {
+          alert('✅ 回答正确！阅读能力很棒！');
+        } else {
+          alert('❌ 回答错误，正确答案是 B。阅读有助于培养许多重要技能。');
+        }
+        updateTaskProgress(3, 1);
+        completeTask(3);
+      } else {
+        alert('请选择一个答案');
+      }
+    }
+
+    // 写作相关
+    function submitWriting() {
+      const content = document.getElementById('writing-input').value.trim();
+      if (content.length < 50) {
+        alert('作文内容太短，请至少写50个单词');
+        return;
+      }
+
+      const keywords = ['time', 'management', 'important', 'effectively', 'however', 'therefore', 'first', 'second', 'finally'];
+      let matched = 0;
+      keywords.forEach(kw => {
+        if (content.toLowerCase().includes(kw)) matched++;
+      });
+
+      const lengthScore = Math.min(30, Math.floor(content.length / 5));
+      const keywordScore = matched * 7;
+      const totalScore = Math.min(100, lengthScore + keywordScore + 30);
+
+      document.getElementById('writing-score').textContent = totalScore;
+      document.getElementById('writing-result').style.display = 'block';
+    }
+
+    // 真题相关
+    let examTimer = null;
+    let examTimeLeft = 25 * 60;
+
+    function startExam() {
+      examTimeLeft = 25 * 60;
+      updateExamTime();
+      examTimer = setInterval(() => {
+        examTimeLeft--;
+        updateExamTime();
+        if (examTimeLeft <= 0) {
+          clearInterval(examTimer);
+          submitExam();
+        }
+      }, 1000);
+    }
+
+    function updateExamTime() {
+      const mins = Math.floor(examTimeLeft / 60);
+      const secs = examTimeLeft % 60;
+      document.getElementById('exam-time').textContent =
+        `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    }
+
+    function submitExam() {
+      if (examTimer) clearInterval(examTimer);
+      alert('试卷已提交！');
+    }
+
+    // 游戏相关
+    let gameTimer = null;
+    let gameScore = 0;
+    let gameTimeLeft = 60;
+    let selectedCards = [];
+    let matchedPairs = 0;
+
+    function startGame() {
+      gameScore = 0;
+      gameTimeLeft = 60;
+      matchedPairs = 0;
+      selectedCards = [];
+      document.getElementById('game-score').textContent = '0';
+      document.getElementById('game-time').textContent = '60';
+      generateMatchGrid();
+      gameTimer = setInterval(() => {
+        gameTimeLeft--;
+        document.getElementById('game-time').textContent = gameTimeLeft;
+        if (gameTimeLeft <= 0) {
+          clearInterval(gameTimer);
+          alert(`游戏结束！得分：${gameScore}`);
+        }
+      }, 1000);
+    }
+
+    function generateMatchGrid() {
+      const words = Data.getWordsByStatus('new').slice(0, 6);
+      const grid = document.getElementById('match-grid');
+      let cards = [];
+
+      words.forEach((word, i) => {
+        cards.push({ id: `w${i}`, type: 'word', text: word.word, pair: i });
+        cards.push({ id: `m${i}`, type: 'meaning', text: word.meaning, pair: i });
+      });
+
+      // 打乱顺序
+      cards.sort(() => Math.random() - 0.5);
+
+      grid.innerHTML = cards.map(card => `
+        <div class="match-card" data-id="${card.id}" data-pair="${card.pair}" onclick="selectCard(this)">
+          ${card.text}
+        </div>
+      `).join('');
+    }
+
+    function selectCard(el) {
+      if (el.classList.contains('matched')) return;
+      if (selectedCards.length >= 2) return;
+
+      el.classList.add('selected');
+      selectedCards.push(el);
+
+      if (selectedCards.length === 2) {
+        const [card1, card2] = selectedCards;
+        if (card1.dataset.pair === card2.dataset.pair) {
+          card1.classList.add('matched');
+          card2.classList.add('matched');
+          gameScore += 10;
+          matchedPairs++;
+          document.getElementById('game-score').textContent = gameScore;
+          selectedCards = [];
+        } else {
+          setTimeout(() => {
+            card1.classList.remove('selected');
+            card2.classList.remove('selected');
+            selectedCards = [];
+          }, 500);
+        }
+      }
+    }
+
+    // 错题本渲染
+    function renderWrongBook() {
+      const list = document.getElementById('wrongbook-list');
+      const empty = document.getElementById('wrongbook-empty');
+      const wrongWords = Data.getWrongBook();
+
+      if (wrongWords.length === 0) {
+        list.style.display = 'none';
+        empty.style.display = 'block';
+      } else {
+        list.style.display = 'flex';
+        empty.style.display = 'none';
+        list.innerHTML = wrongWords.map(word => `
+          <div class="wrong-item">
+            <div class="word">${word.word}</div>
+            <div class="meaning">${word.meaning}</div>
+            <button class="btn-success" onclick="markWordMastered(${word.id})" style="margin-top: 8px; padding: 6px 12px;">已掌握</button>
+          </div>
+        `).join('');
+      }
+    }
+
+    function markWordMastered(wordId) {
+      Data.updateWordStatus(wordId, 'mastered');
+      Data.removeWrong(wordId);
+      renderWrongBook();
+      renderDashboardStats();
+    }
+
+    // 学习中心更新
+    function updateCenterStats() {
+      const stats = Data.get();
+      document.getElementById('center-total').textContent = stats.user.totalMinutes;
+      document.getElementById('center-mastered').textContent = Data.getMasteredCount();
+      document.getElementById('center-wrong').textContent = stats.wrongBook.length;
+      document.getElementById('progress-words').style.width = `${(Data.getMasteredCount() / 50) * 100}%`;
+      document.getElementById('progress-words-text').textContent = `${Math.round((Data.getMasteredCount() / 50) * 100)}%`;
+    }
+
+    // 页面切换事件监听
+    document.addEventListener('pageChange', (e) => {
+      if (e.detail.page === 'vocabulary') {
+        initVocab();
+      } else if (e.detail.page === 'wrongbook') {
+        renderWrongBook();
+      } else if (e.detail.page === 'center') {
+        updateCenterStats();
+      } else if (e.detail.page === 'exam') {
+        startExam();
+      }
+    });
+
+    // 初始化
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboardStats();
+      renderTasks();
+      renderWrongBook();
+    });
+  </script>
+</body>
+</html>

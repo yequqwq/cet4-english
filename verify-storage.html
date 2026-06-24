@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LocalStorage 验证</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+    .card { background: white; padding: 20px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    h2 { color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+    pre { background: #f8f9fa; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 13px; max-height: 300px; }
+    .success { color: #28a745; }
+    .error { color: #dc3545; }
+    button { background: #667eea; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px; }
+  </style>
+</head>
+<body>
+  <h1>LocalStorage 数据验证</h1>
+
+  <div class="card">
+    <h2>1. 检查 cet4_data 键</h2>
+    <button onclick="checkStorage()">检查数据</button>
+    <button onclick="clearStorage()">清空数据</button>
+    <button onclick="reinitData()">重新初始化</button>
+    <div id="result1"></div>
+  </div>
+
+  <div class="card">
+    <h2>2. 验证单词数据</h2>
+    <button onclick="checkWords()">检查单词</button>
+    <div id="result2"></div>
+  </div>
+
+  <div class="card">
+    <h2>3. 验证任务数据</h2>
+    <button onclick="checkTasks()">检查任务</button>
+    <div id="result3"></div>
+  </div>
+
+  <div class="card">
+    <h2>4. 测试完整数据流</h2>
+    <button onclick="fullTest()">完整测试</button>
+    <div id="result4"></div>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script>
+    function show(id, html, isError = false) {
+      document.getElementById(id).innerHTML = `<pre class="${isError ? 'error' : 'success'}">${html}</pre>`;
+    }
+
+    function checkStorage() {
+      const key = 'cet4_data';
+      const data = localStorage.getItem(key);
+      if (data) {
+        const parsed = JSON.parse(data);
+        show('result1', `✅ cet4_data 键存在\n单词数量: ${parsed.words?.length || 0}\n任务数量: ${parsed.todayTasks?.length || 0}\n数据大小: ${data.length} 字符`);
+      } else {
+        show('result1', '❌ cet4_data 键不存在', true);
+      }
+    }
+
+    function clearStorage() {
+      localStorage.removeItem('cet4_data');
+      show('result1', '✅ LocalStorage 已清空');
+    }
+
+    function reinitData() {
+      Data.reset();
+      Data.init();
+      show('result1', '✅ 数据已重新初始化');
+      checkStorage();
+    }
+
+    function checkWords() {
+      const words = Data.getWordsByStatus('all');
+      if (words && words.length > 0) {
+        const firstWord = words[0];
+        show('result2', `✅ 单词数据正常\n总数: ${words.length}\n\n第一个单词:\nID: ${firstWord.id}\n单词: ${firstWord.word}\n音标: ${firstWord.phonetic}\n释义: ${firstWord.meaning}\n例句: ${firstWord.example}\n翻译: ${firstWord.translation}\n状态: ${firstWord.status}`);
+      } else {
+        show('result2', '❌ 单词数据为空', true);
+      }
+    }
+
+    function checkTasks() {
+      const tasks = Data.getTodayTasks();
+      if (tasks && tasks.length > 0) {
+        const list = tasks.map(t => `${t.id}. ${t.title} [${t.completed ? '✓' : '○'}]`).join('\n');
+        show('result3', `✅ 任务数据正常\n总数: ${tasks.length}\n\n任务列表:\n${list}`);
+      } else {
+        show('result3', '❌ 任务数据为空', true);
+      }
+    }
+
+    function fullTest() {
+      let results = [];
+
+      // 测试初始化
+      Data.init();
+      results.push('✅ Data.init() 执行成功');
+
+      // 测试获取数据
+      const data = Data.get();
+      if (data && data.words && data.words.length === 50) {
+        results.push(`✅ 单词数量正确: ${data.words.length}`);
+      } else {
+        results.push(`❌ 单词数量错误: ${data.words?.length || 0}`);
+      }
+
+      // 测试任务
+      const tasks = Data.getTodayTasks();
+      if (tasks && tasks.length === 4) {
+        results.push(`✅ 任务数量正确: ${tasks.length}`);
+      } else {
+        results.push(`❌ 任务数量错误: ${tasks?.length || 0}`);
+      }
+
+      // 测试用户数据
+      const user = Data.get('user');
+      if (user && user.name === '学习者') {
+        results.push('✅ 用户数据正确');
+      } else {
+        results.push('❌ 用户数据错误');
+      }
+
+      // 测试错题本
+      const wrongBook = Data.getWrongBook();
+      results.push(`✅ 错题本初始化正确: ${Array.isArray(wrongBook) ? '是数组' : '不是数组'}`);
+
+      // 测试学习记录
+      Data.recordTime(30);
+      const minutes = Data.get('user.totalMinutes');
+      if (minutes >= 30) {
+        results.push(`✅ 学习时间记录成功: ${minutes} 分钟`);
+      } else {
+        results.push(`❌ 学习时间记录失败: ${minutes}`);
+      }
+
+      // 测试单词状态更新
+      Data.updateWordStatus(1, 'mastered');
+      const masteredCount = Data.getMasteredCount();
+      if (masteredCount > 0) {
+        results.push(`✅ 单词状态更新成功: ${masteredCount} 个已掌握`);
+      } else {
+        results.push('❌ 单词状态更新失败');
+      }
+
+      // 测试错题本添加
+      Data.addWrong(2);
+      const wrongBook2 = Data.getWrongBook();
+      if (wrongBook2.length > 0) {
+        results.push(`✅ 错题本添加成功: ${wrongBook2.length} 个错题`);
+      } else {
+        results.push('❌ 错题本添加失败');
+      }
+
+      show('result4', results.join('\n'));
+    }
+
+    // 页面加载时自动检查
+    document.addEventListener('DOMContentLoaded', () => {
+      checkStorage();
+    });
+  </script>
+</body>
+</html>
