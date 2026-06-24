@@ -1,5 +1,97 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
+
+interface User {
+  id: string;
+  username: string;
+  passwordHash: string;
+  createdAt: string;
+}
+
+interface AuthState {
+  users: User[];
+  currentUser: User | null;
+  isLoggedIn: boolean;
+  
+  register: (username: string, password: string) => boolean;
+  login: (username: string, password: string) => boolean;
+  logout: () => void;
+  switchUser: (userId: string) => void;
+  deleteUser: (userId: string) => void;
+}
+
+const hashPassword = (password: string): string => {
+  let hash = 0;
+  for (let i = 0; i < password.length; i++) {
+    const char = password.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash = hash & hash;
+  }
+  return hash.toString(36);
+};
+
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set, get) => ({
+      users: [],
+      currentUser: null,
+      isLoggedIn: false,
+      
+      register: (username, password) => {
+        const { users } = get();
+        if (users.some((u) => u.username === username)) {
+          return false;
+        }
+        
+        const newUser: User = {
+          id: `user-${Date.now()}`,
+          username,
+          passwordHash: hashPassword(password),
+          createdAt: new Date().toISOString(),
+        };
+        
+        set({ users: [...users, newUser], currentUser: newUser, isLoggedIn: true });
+        return true;
+      },
+      
+      login: (username, password) => {
+        const { users } = get();
+        const user = users.find(
+          (u) => u.username === username && u.passwordHash === hashPassword(password)
+        );
+        
+        if (user) {
+          set({ currentUser: user, isLoggedIn: true });
+          return true;
+        }
+        return false;
+      },
+      
+      logout: () => {
+        set({ currentUser: null, isLoggedIn: false });
+      },
+      
+      switchUser: (userId) => {
+        const { users } = get();
+        const user = users.find((u) => u.id === userId);
+        if (user) {
+          set({ currentUser: user });
+        }
+      },
+      
+      deleteUser: (userId) => {
+        set((state) => ({
+          users: state.users.filter((u) => u.id !== userId),
+          ...(state.currentUser?.id === userId && { currentUser: null, isLoggedIn: false }),
+        }));
+      },
+    }),
+    {
+      name: 'cet4-auth',
+      storage: createJSONStorage(() => localStorage),
+    }
+  )
+);
 
 interface WordProgress {
   [wordId: string]: {
@@ -7,6 +99,20 @@ interface WordProgress {
     lastStudyDate: string;
     isLearned: boolean;
   };
+}
+
+// 艾宾浩斯复习计划
+interface ReviewPlan {
+  wordId: string;
+  level: number; // 1-5级，对应不同的复习间隔
+  nextReviewDate: string; // 下次复习日期
+  lastReviewDate: string; // 上次复习日期
+  reviewCount: number; // 复习次数
+  easeFactor: number; // 难度因子，初始2.5
+}
+
+interface ReviewSchedule {
+  [wordId: string]: ReviewPlan;
 }
 
 interface WrongAnswer {
@@ -68,8 +174,9 @@ interface AppState {
   todayTasks: TodayTask[];
   history: HistoryRecord[];
   wrongBook: string[];
-  translationWrongBook: string[]; // 翻译练习中点击的单词
+  translationWrongBook: string[];
   writingHistory: WritingHistory[];
+  reviewSchedule: ReviewSchedule; // 艾宾浩斯复习计划
   
   setTheme: (theme: 'light' | 'dark') => void;
   toggleTheme: () => void;
@@ -89,6 +196,12 @@ interface AppState {
   removeFromTranslationWrongBook: (word: string) => void;
   clearTranslationWrongBook: () => void;
   
+  // 艾宾浩斯复习相关方法
+  addToReviewSchedule: (wordId: string) => void;
+  getTodayReviewWords: () => string[];
+  reviewWord: (wordId: string, quality: number) => void; // quality: 0-5, 0=完全忘记, 5=完全记住
+  getReviewStats: () => { overdue: number; today: number; total: number };
+  
   addWrongAnswer: (answer: Omit<WrongAnswer, 'id' | 'timestamp'>) => void;
   removeWrongAnswer: (id: string) => void;
   clearWrongAnswers: () => void;
@@ -105,6 +218,8 @@ interface AppState {
   
   exportData: () => string;
   importData: (data: string) => void;
+  
+  clearAllData: () => void;
 }
 
 const initialUserProgress: UserProgress = {
@@ -130,6 +245,28 @@ const initialTodayTasks: TodayTask[] = [
   { id: '4', title: '复习错题本', completed: false, progress: 0, target: 1, module: 'review' },
 ];
 
+const getStorageKey = () => {
+  const { currentUser } = useAuthStore.getState();
+  return currentUser ? `cet4-app-${currentUser.id}` : 'cet4-app';
+};
+
+const createDynamicStorage = () => {
+  return {
+    getItem: (key: string) => {
+      const dynamicKey = key === 'cet4-app' ? getStorageKey() : key;
+      return localStorage.getItem(dynamicKey);
+    },
+    setItem: (key: string, value: string) => {
+      const dynamicKey = key === 'cet4-app' ? getStorageKey() : key;
+      localStorage.setItem(dynamicKey, value);
+    },
+    removeItem: (key: string) => {
+      const dynamicKey = key === 'cet4-app' ? getStorageKey() : key;
+      localStorage.removeItem(dynamicKey);
+    },
+  };
+};
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({
@@ -144,6 +281,7 @@ export const useAppStore = create<AppState>()(
       wrongBook: [],
       translationWrongBook: [],
       writingHistory: [],
+      reviewSchedule: {}, // 艾宾浩斯复习计划
       
       setTheme: (theme) => {
         set({ theme });
@@ -286,6 +424,117 @@ export const useAppStore = create<AppState>()(
         set({ translationWrongBook: [] });
       },
       
+      // 艾宾浩斯复习计划相关方法
+      addToReviewSchedule: (wordId) => {
+        const today = new Date().toISOString().split('T')[0];
+        set((state) => {
+          // 如果单词已在复习计划中，不重复添加
+          if (state.reviewSchedule[wordId]) {
+            return state;
+          }
+          // 初始复习间隔为1天
+          const nextReviewDate = new Date();
+          nextReviewDate.setDate(nextReviewDate.getDate() + 1);
+          
+          return {
+            reviewSchedule: {
+              ...state.reviewSchedule,
+              [wordId]: {
+                wordId,
+                level: 1,
+                nextReviewDate: nextReviewDate.toISOString().split('T')[0],
+                lastReviewDate: today,
+                reviewCount: 0,
+                easeFactor: 2.5,
+              },
+            },
+          };
+        });
+      },
+      
+      getTodayReviewWords: () => {
+        const { reviewSchedule } = get();
+        const today = new Date().toISOString().split('T')[0];
+        
+        return Object.values(reviewSchedule)
+          .filter(plan => plan.nextReviewDate <= today)
+          .map(plan => plan.wordId);
+      },
+      
+      reviewWord: (wordId, quality) => {
+        set((state) => {
+          const plan = state.reviewSchedule[wordId];
+          if (!plan) return state;
+          
+          const today = new Date().toISOString().split('T')[0];
+          
+          // 根据SM-2算法计算新的间隔
+          // quality: 0-5 (0=完全忘记, 3=勉强记住, 5=完全记住)
+          let { level, easeFactor, reviewCount } = plan;
+          
+          // 更新难度因子
+          easeFactor = Math.max(1.3, easeFactor + (0.1 - (5 - quality) * (0.08 + (5 - quality) * 0.02)));
+          
+          // 根据质量调整复习间隔
+          let interval: number;
+          if (quality < 3) {
+            // 忘记：从头开始
+            level = 1;
+            interval = 1; // 1天后
+          } else {
+            // 记住：按照艾宾浩斯曲线复习
+            reviewCount += 1;
+            if (level === 1) {
+              interval = 1; // 第2天
+            } else if (level === 2) {
+              interval = 3; // 第4天
+            } else if (level === 3) {
+              interval = 7; // 第7天
+            } else if (level === 4) {
+              interval = 14; // 第15天
+            } else {
+              // 已经达到最高等级，使用难度因子计算间隔
+              interval = Math.round(interval * easeFactor);
+            }
+            level = Math.min(5, level + 1);
+          }
+          
+          const nextReviewDate = new Date();
+          nextReviewDate.setDate(nextReviewDate.getDate() + interval);
+          
+          return {
+            reviewSchedule: {
+              ...state.reviewSchedule,
+              [wordId]: {
+                ...plan,
+                level,
+                easeFactor,
+                nextReviewDate: nextReviewDate.toISOString().split('T')[0],
+                lastReviewDate: today,
+                reviewCount,
+              },
+            },
+          };
+        });
+      },
+      
+      getReviewStats: () => {
+        const { reviewSchedule } = get();
+        const today = new Date().toISOString().split('T')[0];
+        
+        const overdue = Object.values(reviewSchedule).filter(
+          plan => plan.nextReviewDate < today
+        ).length;
+        
+        const todayCount = Object.values(reviewSchedule).filter(
+          plan => plan.nextReviewDate === today
+        ).length;
+        
+        const total = Object.keys(reviewSchedule).length;
+        
+        return { overdue, today: todayCount, total };
+      },
+      
       addWrongAnswer: (answer) => {
         set((state) => ({
           wrongAnswers: [
@@ -392,6 +641,7 @@ export const useAppStore = create<AppState>()(
           wrongBook: state.wrongBook,
           translationWrongBook: state.translationWrongBook,
           writingHistory: state.writingHistory,
+          reviewSchedule: state.reviewSchedule,
         }, null, 2);
       },
       
@@ -408,14 +658,31 @@ export const useAppStore = create<AppState>()(
             wrongBook: parsed.wrongBook || [],
             translationWrongBook: parsed.translationWrongBook || [],
             writingHistory: parsed.writingHistory || [],
+            reviewSchedule: parsed.reviewSchedule || {},
           });
         } catch {
           console.error('Failed to import data');
         }
       },
+      
+      clearAllData: () => {
+        set({
+          userProgress: initialUserProgress,
+          wordProgress: {},
+          wrongAnswers: [],
+          todayTasks: initialTodayTasks,
+          history: [],
+          wrongBook: [],
+          translationWrongBook: [],
+          writingHistory: [],
+          reviewSchedule: {},
+          isFirstTime: true,
+        });
+      },
     }),
     {
       name: 'cet4-app',
+      storage: createJSONStorage(createDynamicStorage),
       onRehydrateStorage: () => (state) => {
         if (state) {
           state.setLoading(false);

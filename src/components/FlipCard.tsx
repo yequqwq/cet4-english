@@ -1,6 +1,7 @@
-import { useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Volume2, ThumbsUp, ThumbsDown, RotateCcw, Check } from 'lucide-react';
 import type { Word } from '../data/words';
+import { useAudioPlayer } from '../hooks/useAudioPlayer';
 
 interface FlipCardProps {
   word: Word;
@@ -14,65 +15,58 @@ interface FlipCardProps {
 export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, currentMastery }: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [feedback, setFeedback] = useState<'know' | 'dontknow' | null>(null);
+  const { playWord, playExample, cancelCurrentAudio } = useAudioPlayer();
 
   const handleFlip = () => {
     setIsFlipped(!isFlipped);
   };
 
-  // 播放例句音频
-  const playExample = () => {
-    return new Promise<void>((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(word.example);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      speechSynthesis.speak(utterance);
-    });
-  };
+  useEffect(() => {
+    setIsFlipped(false);
+    setFeedback(null);
+    cancelCurrentAudio();
+    setTimeout(() => {
+      playWord(word.word);
+    }, 100);
 
-  // 播放单词音频
-  const playWord = () => {
-    return new Promise<void>((resolve) => {
-      const utterance = new SpeechSynthesisUtterance(word.word);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
-      utterance.onend = () => resolve();
-      utterance.onerror = () => resolve();
-      speechSynthesis.speak(utterance);
-    });
-  };
+    return () => {
+      cancelCurrentAudio();
+    };
+  }, [word, playWord, cancelCurrentAudio]);
 
-  const handleKnow = async () => {
-    // 显示绿色反馈动画
+  const handleKnow = useCallback(async () => {
     setFeedback('know');
-    // 播放成功音效，等待播放完成
-    await playWord();
-    // 延迟后进入下一个
+    await playWord(word.word);
     setTimeout(() => {
       setFeedback(null);
       const newMastery = Math.min(5, currentMastery + 1);
       onMasteryChange(newMastery);
       onNext();
     }, 300);
-  };
+  }, [word.word, currentMastery, playWord, onMasteryChange, onNext]);
 
-  const handleDontKnow = async () => {
-    // 显示红色反馈动画
+  const handleDontKnow = useCallback(async () => {
     setFeedback('dontknow');
-    // 播放例句，等待播放完成
-    await playExample();
-    // 延迟后进入下一个
+    await playExample(word.example);
     setTimeout(() => {
       setFeedback(null);
       onMarkWrong();
       onNext();
     }, 300);
-  };
+  }, [word.example, playExample, onMarkWrong, onNext]);
+
+  const handleNextDirect = useCallback(() => {
+    cancelCurrentAudio();
+    onNext();
+  }, [cancelCurrentAudio, onNext]);
+
+  const handlePrevDirect = useCallback(() => {
+    cancelCurrentAudio();
+    onPrev();
+  }, [cancelCurrentAudio, onPrev]);
 
   return (
     <div className="w-full max-w-md mx-auto">
-      {/* 反馈动画覆盖层 */}
       {feedback && (
         <div className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300 ${feedback === 'know' ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
           <div className={`text-9xl animate-bounce-in ${feedback === 'know' ? 'text-green-400' : 'text-red-400'}`}>
@@ -93,7 +87,7 @@ export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, c
             <button
               onClick={(e) => {
                 e.stopPropagation();
-                playWord();
+                playWord(word.word);
               }}
               className="mb-4 p-3 bg-white/20 rounded-full hover:bg-white/30 transition-all hover:scale-110 active:scale-95"
             >
@@ -113,10 +107,7 @@ export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, c
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      const utterance = new SpeechSynthesisUtterance(word.example);
-                      utterance.lang = 'en-US';
-                      utterance.rate = 0.8;
-                      speechSynthesis.speak(utterance);
+                      playExample(word.example);
                     }}
                     className="p-1 hover:bg-white/10 rounded text-white/60 hover:text-white transition-all"
                     title="播放例句"
@@ -143,7 +134,7 @@ export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, c
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onPrev();
+            handlePrevDirect();
           }}
           className="btn-secondary flex items-center gap-2"
         >
@@ -173,7 +164,7 @@ export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, c
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onNext();
+            handleNextDirect();
           }}
           className="btn-secondary"
         >

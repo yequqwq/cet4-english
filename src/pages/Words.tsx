@@ -3,6 +3,7 @@ import { Search, Filter, Grid3X3, List, Volume2, Play, Trophy, RotateCcw, BookMa
 import { words, wordCategories, difficultyLevels, type Word } from '../data/words';
 import { FlipCard } from '../components/FlipCard';
 import { useAppStore } from '../store/useAppStore';
+import { useAudioPlayer } from '../hooks/useAudioPlayer';
 
 type ViewMode = 'card' | 'list';
 type StudyState = 'idle' | 'studying' | 'summary';
@@ -19,7 +20,8 @@ export const Words = () => {
   const [studyGroup, setStudyGroup] = useState<Word[]>([]);
   const [sessionStats, setSessionStats] = useState({ known: 0, unknown: 0 });
   const [isReviewMode, setIsReviewMode] = useState(false);
-  const { wordProgress, updateWordProgress, markWordWrong, updateTaskProgress, addHistoryRecord, addStudyTime, wrongBook } = useAppStore();
+  const { wordProgress, updateWordProgress, markWordWrong, updateTaskProgress, addHistoryRecord, addStudyTime, wrongBook, addToReviewSchedule } = useAppStore();
+  const { speak } = useAudioPlayer();
 
   const filteredWords = words.filter((word) => {
     const matchesSearch =
@@ -113,6 +115,10 @@ export const Words = () => {
     if (currentWord) {
       updateWordProgress(currentWord.id, mastery);
       setSessionStats((prev) => ({ ...prev, known: prev.known + 1 }));
+      // 首次学习时添加到艾宾浩斯复习计划
+      if (!wordProgress[currentWord.id] || wordProgress[currentWord.id].mastery === 0) {
+        addToReviewSchedule(currentWord.id);
+      }
     }
   };
 
@@ -383,10 +389,7 @@ export const Words = () => {
                       <div className="flex items-center gap-2">
                         <span className="text-white font-english font-medium">{word.word}</span>
                         <button
-                          onClick={() => {
-                            const utterance = new SpeechSynthesisUtterance(word.word);
-                            speechSynthesis.speak(utterance);
-                          }}
+                          onClick={() => speak(word.word)}
                           className="p-1 hover:bg-white/10 rounded"
                         >
                           <Volume2 className="w-4 h-4 text-white/50" />

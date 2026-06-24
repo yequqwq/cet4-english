@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Flame, Clock, Award, ChevronRight, Calendar, ArrowRight, AlertCircle } from 'lucide-react';
-import { useAppStore } from '../store/useAppStore';
+import { BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Flame, Clock, Award, ChevronRight, Calendar, ArrowRight, AlertCircle, Brain } from 'lucide-react';
+import { useAppStore, useAuthStore } from '../store/useAppStore';
 import { ProgressRing } from '../components/ProgressRing';
 import { useNavigate } from 'react-router-dom';
 
 const quickAccessItems = [
   { id: '/words', label: '单词学习', icon: BookOpen, color: 'from-primary-500 to-primary-600' },
+  { id: '/review', label: '艾宾浩斯复习', icon: Brain, color: 'from-purple-500 to-pink-500' },
   { id: '/listening', label: '听力训练', icon: Headphones, color: 'from-accent-500 to-accent-600' },
   { id: '/reading', label: '阅读练习', icon: FileText, color: 'from-green-500 to-green-600' },
   { id: '/writing', label: '写作翻译', icon: PenTool, color: 'from-yellow-500 to-orange-500' },
@@ -23,13 +24,18 @@ const moduleMap: Record<string, string> = {
 };
 
 export const Home = () => {
-  const { userProgress, todayTasks, checkIn, isFirstTime, setIsFirstTime, wrongBook } = useAppStore();
+  const { userProgress, todayTasks, checkIn, isFirstTime, setIsFirstTime, wrongBook, getReviewStats } = useAppStore();
+  const { currentUser } = useAuthStore();
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const navigate = useNavigate();
 
   // 错题本单词数量
   const wrongBookCount = wrongBook.length;
+  
+  // 艾宾浩斯复习统计
+  const reviewStats = getReviewStats();
+  const totalReviewWords = reviewStats.overdue + reviewStats.today;
 
   useEffect(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -82,7 +88,9 @@ export const Home = () => {
       <header className="p-6 mb-6">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-white">早上好！</h1>
+            <h1 className="text-3xl font-bold text-white">
+              {new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'}，{currentUser?.username || '学习者'}！
+            </h1>
             <p className="text-white/70 mt-1">今天也要加油学习哦！</p>
           </div>
           <button
@@ -212,6 +220,42 @@ export const Home = () => {
               <div className="flex items-center gap-3">
                 <span className="px-4 py-2 bg-red-500/30 text-red-300 rounded-lg font-medium">
                   立即复习
+                </span>
+                <ChevronRight className="w-6 h-6 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
+              </div>
+            </div>
+          </button>
+        </section>
+      )}
+
+      {/* 艾宾浩斯复习入口 */}
+      {totalReviewWords > 0 && (
+        <section className="px-6 mb-8">
+          <button
+            onClick={() => navigate('/review')}
+            className="w-full glass-card p-6 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 hover:border-purple-500/50 transition-all group"
+          >
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center">
+                  <Brain className="w-7 h-7 text-white" />
+                </div>
+                <div className="text-left">
+                  <h3 className="text-xl font-bold text-white mb-1">艾宾浩斯复习</h3>
+                  <p className="text-white/70">
+                    {reviewStats.overdue > 0 && (
+                      <span>逾期 <span className="text-red-400 font-bold text-lg">{reviewStats.overdue}</span> 个单词 </span>
+                    )}
+                    {reviewStats.overdue > 0 && reviewStats.today > 0 && <span>，</span>}
+                    {reviewStats.today > 0 && (
+                      <span>今日待复习 <span className="text-purple-400 font-bold text-lg">{reviewStats.today}</span> 个</span>
+                    )}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="px-4 py-2 bg-purple-500/30 text-purple-300 rounded-lg font-medium">
+                  开始复习
                 </span>
                 <ChevronRight className="w-6 h-6 text-white/50 group-hover:text-white group-hover:translate-x-1 transition-all" />
               </div>

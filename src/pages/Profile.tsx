@@ -1,15 +1,16 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Trash2, Download, Upload, Sun, Moon, Clock, Flame, Award, Target, RotateCcw, Play, Volume2, BookMarked, CheckCircle } from 'lucide-react';
-import { useAppStore } from '../store/useAppStore';
+import { User, BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Trash2, Download, Upload, Sun, Moon, Clock, Flame, Award, Target, RotateCcw, Play, Volume2, BookMarked, CheckCircle, LogOut, Users, X } from 'lucide-react';
+import { useAppStore, useAuthStore } from '../store/useAppStore';
 import { words, wordCategories } from '../data/words';
 
-type TabType = 'stats' | 'wrongAnswers' | 'wrongBook' | 'translationBook' | 'settings';
+type TabType = 'stats' | 'wrongAnswers' | 'wrongBook' | 'translationBook' | 'settings' | 'accounts';
 
 export const Profile = () => {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const navigate = useNavigate();
   const { userProgress, wordProgress, wrongAnswers, wrongBook, translationWrongBook, removeWrongAnswer, clearWrongAnswers, exportData, importData, theme, toggleTheme, removeFromWrongBook, removeFromTranslationWrongBook, clearTranslationWrongBook, markWordLearned, history } = useAppStore();
+  const { currentUser, users, logout, deleteUser, switchUser } = useAuthStore();
   const [showImportModal, setShowImportModal] = useState(false);
   const [importDataText, setImportDataText] = useState('');
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -176,6 +177,12 @@ export const Profile = () => {
           >
             设置
           </button>
+          <button
+            onClick={() => setActiveTab('accounts')}
+            className={`px-4 py-2 rounded-full transition-all ${activeTab === 'accounts' ? 'bg-gradient-to-r from-primary-500 to-accent-500 text-white' : 'bg-white/10 text-white/70 hover:bg-white/20'}`}
+          >
+            账号管理
+          </button>
         </div>
       </header>
 
@@ -187,7 +194,7 @@ export const Profile = () => {
                 <User className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">学习者</h2>
+                <h2 className="text-xl font-bold text-white">{currentUser?.username || '学习者'}</h2>
                 <p className="text-white/70">四级英语学习中...</p>
               </div>
             </div>
@@ -531,6 +538,106 @@ export const Profile = () => {
                 <span className="text-white">导入学习数据</span>
               </div>
               <span className="text-white/70">点击导入</span>
+            </button>
+
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="w-full flex items-center justify-between p-4 bg-red-500/20 rounded-xl hover:bg-red-500/30 transition-all"
+            >
+              <div className="flex items-center gap-3">
+                <LogOut className="w-6 h-6 text-red-400" />
+                <span className="text-red-300">退出登录</span>
+              </div>
+              <span className="text-red-300/70">切换账号</span>
+            </button>
+          </div>
+        </section>
+      )}
+
+      {activeTab === 'accounts' && (
+        <section className="px-6">
+          <div className="glass-card p-6 mb-6">
+            <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+              <Users className="w-5 h-5 text-accent-400" />
+              账号管理
+            </h3>
+            
+            <div className="bg-gradient-to-r from-primary-500/20 to-accent-500/20 rounded-xl p-4 mb-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-white/70 text-sm">当前登录</p>
+                  <p className="text-white font-bold text-lg">{currentUser?.username}</p>
+                </div>
+                <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-full text-sm">在线</span>
+              </div>
+            </div>
+
+            <h4 className="text-white/70 text-sm mb-3">所有账号</h4>
+            <div className="space-y-3">
+              {users.map((user) => (
+                <div
+                  key={user.id}
+                  className={`flex items-center justify-between p-4 rounded-xl transition-all ${
+                    user.id === currentUser?.id
+                      ? 'bg-primary-500/20 border border-primary-500/30'
+                      : 'bg-white/5 hover:bg-white/10'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                      user.id === currentUser?.id
+                        ? 'bg-gradient-to-r from-primary-500 to-accent-500'
+                        : 'bg-white/10'
+                    }`}>
+                      <User className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{user.username}</p>
+                      <p className="text-white/50 text-xs">
+                        {new Date(user.createdAt).toLocaleDateString('zh-CN')} 创建
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    {user.id !== currentUser?.id && (
+                      <>
+                        <button
+                          onClick={() => {
+                            switchUser(user.id);
+                            navigate('/');
+                          }}
+                          className="px-3 py-2 bg-primary-500/30 text-primary-300 rounded-lg hover:bg-primary-500/40 transition-all text-sm"
+                        >
+                          切换
+                        </button>
+                        <button
+                          onClick={() => deleteUser(user.id)}
+                          className="p-2 text-white/50 hover:text-red-400 transition-all"
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </>
+                    )}
+                    {user.id === currentUser?.id && (
+                      <span className="text-white/50 text-sm">当前账号</span>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <button
+              onClick={() => {
+                logout();
+                navigate('/login');
+              }}
+              className="w-full mt-6 flex items-center justify-center gap-2 px-4 py-3 bg-white/10 text-white/70 rounded-xl hover:bg-white/20 transition-all"
+            >
+              <LogOut className="w-5 h-5" />
+              切换到其他账号
             </button>
           </div>
         </section>

@@ -1,10 +1,12 @@
 import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Headphones, FileText, PenTool, Languages, FileQuestion, Gamepad2, User, Sun, Moon } from 'lucide-react';
+import { Home, BookOpen, Headphones, FileText, PenTool, Languages, FileQuestion, Gamepad2, User, Sun, Moon, Brain } from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 const navItems = [
   { id: '/', label: '首页', icon: Home },
   { id: '/words', label: '单词学习', icon: BookOpen },
+  { id: '/vocab-book', label: '单词本', icon: BookOpen },
+  { id: '/review', label: '艾宾浩斯复习', icon: Brain },
   { id: '/listening', label: '听力训练', icon: Headphones },
   { id: '/reading', label: '阅读练习', icon: FileText },
   { id: '/writing', label: '写作翻译', icon: PenTool },

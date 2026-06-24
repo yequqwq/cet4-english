@@ -2,8 +2,9 @@ import { useState, useCallback } from 'react';
 import { Volume2, RefreshCw, Eye, CheckCircle, BookMarked, Shuffle, SkipForward, ArrowRightLeft, Languages, ChevronLeft, ChevronRight, Star, AlertCircle } from 'lucide-react';
 import { translationSentences } from '../data/translationSentences';
 import { useAppStore } from '../store/useAppStore';
+import { useAudioPlayer } from '../hooks/useAudioPlayer';
 
-type TranslationMode = 'e2c' | 'c2e'; // 英译中 / 中译英
+type TranslationMode = 'e2c' | 'c2e';
 
 export const Translation = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -11,28 +12,24 @@ export const Translation = () => {
   const [userTranslation, setUserTranslation] = useState('');
   const [showAnswer, setShowAnswer] = useState(false);
   const [sessionStats, setSessionStats] = useState({ completed: 0, revealed: 0 });
-  const [mode, setMode] = useState<TranslationMode>('e2c'); // 默认英译中
-  const [addedWord, setAddedWord] = useState<string | null>(null); // 记录刚添加的单词
+  const [mode, setMode] = useState<TranslationMode>('e2c');
+  const [addedWord, setAddedWord] = useState<string | null>(null);
   const [showAddedToast, setShowAddedToast] = useState(false);
   const { addToTranslationWrongBook, removeFromTranslationWrongBook, translationWrongBook } = useAppStore();
+  const { speak, cancelCurrentAudio } = useAudioPlayer();
 
   const currentSentence = translationSentences[currentIndex];
 
-  // 切换翻译模式
   const toggleMode = () => {
     setMode((prev) => (prev === 'e2c' ? 'c2e' : 'e2c'));
     setUserTranslation('');
     setShowAnswer(false);
   };
 
-  // 播放当前句子
   const playSentence = useCallback(() => {
     const textToPlay = mode === 'e2c' ? currentSentence.english : currentSentence.chinese;
-    const utterance = new SpeechSynthesisUtterance(textToPlay);
-    utterance.lang = mode === 'e2c' ? 'en-US' : 'zh-CN';
-    utterance.rate = mode === 'e2c' ? 0.7 : 0.9;
-    speechSynthesis.speak(utterance);
-  }, [currentSentence, mode]);
+    speak(textToPlay, { lang: mode === 'e2c' ? 'en-US' : 'zh-CN', rate: mode === 'e2c' ? 0.7 : 0.9 });
+  }, [currentSentence, mode, speak]);
 
   // 保存当前索引到历史
   const saveToHistory = (currentIdx: number) => {
@@ -380,12 +377,7 @@ export const Translation = () => {
                   {currentSentence.english}
                 </p>
                 <button
-                  onClick={() => {
-                    const utterance = new SpeechSynthesisUtterance(currentSentence.english);
-                    utterance.lang = 'en-US';
-                    utterance.rate = 0.7;
-                    speechSynthesis.speak(utterance);
-                  }}
+                  onClick={() => speak(currentSentence.english, { lang: 'en-US', rate: 0.7 })}
                   className="mt-4 flex items-center gap-2 px-4 py-2 bg-primary-500/30 text-primary-300 rounded-lg hover:bg-primary-500/50 transition-all"
                 >
                   <Volume2 className="w-4 h-4" />
