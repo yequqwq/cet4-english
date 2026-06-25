@@ -1,5 +1,8 @@
 import requests, base64, re, os
-TOKEN = 'YOUR_TOKEN_HERE'
+TOKEN = os.environ.get('GITHUB_TOKEN', '')
+if not TOKEN:
+    print('Error: GITHUB_TOKEN environment variable not set.')
+    exit(1)
 headers = {'Authorization': 'Bearer ' + TOKEN}
 API = 'https://api.github.com'
 r = requests.get(API + '/repos/yequqwq/cet4-english/contents/index.html?ref=gh-pages', headers=headers)
