@@ -1,5 +1,17 @@
 import { useState, useEffect } from 'react';
-import { Search, Filter, Grid3X3, List, Volume2, Play, Trophy, RotateCcw, BookMarked, ArrowLeft, Gauge } from 'lucide-react';
+import {
+  Search,
+  Filter,
+  Grid3X3,
+  List,
+  Volume2,
+  Play,
+  Trophy,
+  RotateCcw,
+  BookMarked,
+  ArrowLeft,
+  Gauge,
+} from 'lucide-react';
 import { words, wordCategories, difficultyLevels, type Word } from '../data/words';
 import { FlipCard } from '../components/FlipCard';
 import { useAppStore } from '../store/useAppStore';
@@ -20,7 +32,16 @@ export const Words = () => {
   const [studyGroup, setStudyGroup] = useState<Word[]>([]);
   const [sessionStats, setSessionStats] = useState({ known: 0, unknown: 0 });
   const [isReviewMode, setIsReviewMode] = useState(false);
-  const { wordProgress, updateWordProgress, markWordWrong, updateTaskProgress, addHistoryRecord, addStudyTime, wrongBook, addToReviewSchedule } = useAppStore();
+  const {
+    wordProgress,
+    updateWordProgress,
+    markWordWrong,
+    updateTaskProgress,
+    addHistoryRecord,
+    addStudyTime,
+    wrongBook,
+    addToReviewSchedule,
+  } = useAppStore();
   const { speak } = useAudioPlayer();
 
   const filteredWords = words.filter((word) => {
@@ -28,7 +49,8 @@ export const Words = () => {
       word.word.toLowerCase().includes(searchQuery.toLowerCase()) ||
       word.meaning.includes(searchQuery);
     const matchesCategory = selectedCategory === 'all' || word.category === selectedCategory;
-    const matchesDifficulty = selectedDifficulty === 'all' || word.difficulty === selectedDifficulty;
+    const matchesDifficulty =
+      selectedDifficulty === 'all' || word.difficulty === selectedDifficulty;
     return matchesSearch && matchesCategory && matchesDifficulty;
   });
 
@@ -55,9 +77,7 @@ export const Words = () => {
 
   // 获取错题本单词
   const getWrongBookWords = () => {
-    return wrongBook
-      .map(id => words.find(w => w.id === id))
-      .filter(Boolean) as Word[];
+    return wrongBook.map((id) => words.find((w) => w.id === id)).filter(Boolean) as Word[];
   };
 
   const initWrongBookStudy = () => {
@@ -153,13 +173,19 @@ export const Words = () => {
       <div className="min-h-screen pb-24 md:pb-0 animate-fade-in-up flex items-center justify-center">
         <div className="glass-card p-8 max-w-md mx-4 text-center">
           <div className="w-24 h-24 mx-auto mb-6 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center">
-            {isReviewMode ? <BookMarked className="w-12 h-12 text-white" /> : <Trophy className="w-12 h-12 text-white" />}
+            {isReviewMode ? (
+              <BookMarked className="w-12 h-12 text-white" />
+            ) : (
+              <Trophy className="w-12 h-12 text-white" />
+            )}
           </div>
           <h2 className="text-2xl font-bold text-white mb-2">
             {isReviewMode ? '错题复习完成！' : '本轮学习完成！'}
           </h2>
           <p className="text-white/70 mb-6">
-            {isReviewMode ? `共复习 ${studyGroup.length} 个错题` : `共学习 ${studyGroup.length} 个单词`}
+            {isReviewMode
+              ? `共复习 ${studyGroup.length} 个错题`
+              : `共学习 ${studyGroup.length} 个单词`}
           </p>
 
           <div className="grid grid-cols-2 gap-4 mb-8">
@@ -176,7 +202,9 @@ export const Words = () => {
           <div className="w-full h-2 bg-white/10 rounded-full mb-6 overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-green-500 to-green-400 rounded-full transition-all duration-1000"
-              style={{ width: `${studyGroup.length > 0 ? (sessionStats.known / studyGroup.length) * 100 : 0}%` }}
+              style={{
+                width: `${studyGroup.length > 0 ? (sessionStats.known / studyGroup.length) * 100 : 0}%`,
+              }}
             />
           </div>
 
@@ -214,7 +242,8 @@ export const Words = () => {
           <div className="glass-card p-4 mb-4 flex items-center gap-3 bg-gradient-to-r from-red-500/20 to-orange-500/20">
             <BookMarked className="w-6 h-6 text-red-400" />
             <p className="text-white/90 flex-1">
-              当前复习错题本中的 <span className="text-red-400 font-bold">{wrongBook.length}</span> 个单词
+              当前复习错题本中的 <span className="text-red-400 font-bold">{wrongBook.length}</span>{' '}
+              个单词
             </p>
           </div>
         )}
@@ -263,12 +292,12 @@ export const Words = () => {
               key={difficulty}
               onClick={() => setSelectedDifficulty(difficulty)}
               className={`px-4 py-2 rounded-full transition-all ${
-                selectedDifficulty === difficulty 
-                  ? difficulty === 'cet4' 
-                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white' 
+                selectedDifficulty === difficulty
+                  ? difficulty === 'cet4'
+                    ? 'bg-gradient-to-r from-green-500 to-green-600 text-white'
                     : difficulty === 'cet6'
-                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
-                    : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white'
+                      : 'bg-gradient-to-r from-purple-500 to-purple-600 text-white'
                   : 'bg-white/10 text-white/70 hover:bg-white/20'
               }`}
             >
@@ -304,15 +333,14 @@ export const Words = () => {
 
       {studyState === 'idle' && !isReviewMode && (
         <section className="px-6 mb-6">
-          <button
-            onClick={initStudyGroup}
-            className="w-full glass-card p-8 text-center card-hover"
-          >
+          <button onClick={initStudyGroup} className="w-full glass-card p-8 text-center card-hover">
             <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-gradient-to-r from-primary-500 to-accent-500 flex items-center justify-center">
               <Play className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">开始学习</h2>
-            <p className="text-white/70">本次将学习 {Math.min(WORDS_PER_GROUP, filteredWords.length)} 个单词</p>
+            <p className="text-white/70">
+              本次将学习 {Math.min(WORDS_PER_GROUP, filteredWords.length)} 个单词
+            </p>
           </button>
         </section>
       )}
@@ -324,9 +352,7 @@ export const Words = () => {
               <BookMarked className="w-8 h-8 text-white" />
             </div>
             <h2 className="text-xl font-bold text-white mb-2">错题复习模式</h2>
-            <p className="text-white/70 mb-4">
-              共 {wrongBook.length} 个错题等待复习
-            </p>
+            <p className="text-white/70 mb-4">共 {wrongBook.length} 个错题等待复习</p>
             <button
               onClick={initWrongBookStudy}
               className="px-8 py-3 bg-gradient-to-r from-primary-500 to-accent-500 text-white font-bold rounded-xl hover:opacity-90 transition-all"
@@ -384,7 +410,10 @@ export const Words = () => {
               </thead>
               <tbody>
                 {filteredWords.map((word) => (
-                  <tr key={word.id} className="border-b border-white/10 hover:bg-white/5 transition-all">
+                  <tr
+                    key={word.id}
+                    className="border-b border-white/10 hover:bg-white/5 transition-all"
+                  >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <span className="text-white font-english font-medium">{word.word}</span>

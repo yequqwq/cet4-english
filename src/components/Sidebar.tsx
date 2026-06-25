@@ -1,5 +1,18 @@
-import { Link, useLocation } from 'react-router-dom';
-import { Home, BookOpen, Headphones, FileText, PenTool, Languages, FileQuestion, Gamepad2, User, Sun, Moon, Brain } from 'lucide-react';
+﻿import { Link, useLocation } from 'react-router-dom';
+import {
+  Home,
+  BookOpen,
+  Headphones,
+  FileText,
+  PenTool,
+  Languages,
+  FileQuestion,
+  Gamepad2,
+  User,
+  Sun,
+  Moon,
+  Brain,
+} from 'lucide-react';
 import { useAppStore } from '../store/useAppStore';
 
 const navItems = [
@@ -21,16 +34,16 @@ export const Sidebar = () => {
   const { theme, toggleTheme } = useAppStore();
 
   return (
-    <aside className="hidden md:flex flex-col w-64 glass-card h-screen fixed left-0 top-0 z-50">
+    <aside className="w-64 glass-card h-screen flex flex-col fixed md:left-0 left-0 top-0 z-50">
       <div className="p-6 border-b border-white/20">
         <h1 className="text-2xl font-bold text-white flex items-center gap-3">
           <BookOpen className="w-8 h-8 text-accent-400" />
-          四级英语
+          CET-4 AI 学习系统
         </h1>
-        <p className="text-white/60 text-sm mt-1">CET-4 Learning App</p>
+        <p className="text-white/60 text-sm mt-1">Smart Learning Platform</p>
       </div>
 
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
           const isActive = location.pathname === item.id;
@@ -59,7 +72,7 @@ export const Sidebar = () => {
           {theme === 'light' ? (
             <>
               <Moon className="w-5 h-5" />
-              <span>切换到暗黑模式</span>
+              <span>切换到暗色模式</span>
             </>
           ) : (
             <>

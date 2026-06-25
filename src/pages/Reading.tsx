@@ -89,7 +89,9 @@ export const Reading = () => {
           </div>
 
           <div className="bg-white/5 rounded-xl p-6 mb-6 max-h-96 overflow-y-auto">
-            <p className="text-white/90 leading-relaxed whitespace-pre-line">{currentArticle?.content}</p>
+            <p className="text-white/90 leading-relaxed whitespace-pre-line">
+              {currentArticle?.content}
+            </p>
           </div>
 
           {currentArticle?.questions && (
@@ -112,7 +114,8 @@ export const Reading = () => {
                           optionClass = 'bg-red-500/30 border-red-500';
                         }
                       } else if (isSelected) {
-                        optionClass = 'bg-gradient-to-r from-primary-500/30 to-accent-500/30 border-primary-500';
+                        optionClass =
+                          'bg-gradient-to-r from-primary-500/30 to-accent-500/30 border-primary-500';
                       }
 
                       return (
@@ -126,8 +129,12 @@ export const Reading = () => {
                             {String.fromCharCode(65 + oIndex)}
                           </span>
                           <span className="text-white text-sm">{option}</span>
-                          {showResult && isCorrect && <Check className="w-4 h-4 text-green-500 ml-auto" />}
-                          {showResult && isSelected && !isCorrect && <X className="w-4 h-4 text-red-500 ml-auto" />}
+                          {showResult && isCorrect && (
+                            <Check className="w-4 h-4 text-green-500 ml-auto" />
+                          )}
+                          {showResult && isSelected && !isCorrect && (
+                            <X className="w-4 h-4 text-red-500 ml-auto" />
+                          )}
                         </button>
                       );
                     })}
@@ -152,16 +159,16 @@ export const Reading = () => {
             {!showResult ? (
               <button
                 onClick={handleSubmit}
-                disabled={currentArticle?.questions && selectedAnswers.length < currentArticle.questions.length}
+                disabled={
+                  currentArticle?.questions &&
+                  selectedAnswers.length < currentArticle.questions.length
+                }
                 className={`btn-primary ${currentArticle?.questions && selectedAnswers.length < currentArticle.questions.length ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 提交答案
               </button>
             ) : (
-              <button
-                onClick={handleReset}
-                className="btn-secondary"
-              >
+              <button onClick={handleReset} className="btn-secondary">
                 再做一次
               </button>
             )}

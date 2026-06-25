@@ -19,88 +19,97 @@ export const useAudioPlayer = () => {
     }
   }, []);
 
-  const speak = useCallback((text: string, options: { rate?: number; lang?: string } = {}) => {
-    cancelCurrentAudio();
-
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = options.lang || 'en-US';
-    utterance.rate = options.rate || 0.8;
-
-    stateRef.current.isPlaying = true;
-    stateRef.current.currentWord = text;
-
-    utterance.onend = () => {
-      if (stateRef.current.currentWord === text) {
-        stateRef.current.isPlaying = false;
-        stateRef.current.currentWord = null;
-      }
-    };
-
-    utterance.onerror = () => {
-      stateRef.current.isPlaying = false;
-      stateRef.current.currentWord = null;
-    };
-
-    speechSynthesis.speak(utterance);
-  }, [cancelCurrentAudio]);
-
-  const playWord = useCallback((word: string) => {
-    return new Promise<void>((resolve) => {
+  const speak = useCallback(
+    (text: string, options: { rate?: number; lang?: string } = {}) => {
       cancelCurrentAudio();
 
-      const utterance = new SpeechSynthesisUtterance(word);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
+      const utterance = new SpeechSynthesisUtterance(text);
+      utterance.lang = options.lang || 'en-US';
+      utterance.rate = options.rate || 0.8;
 
       stateRef.current.isPlaying = true;
-      stateRef.current.currentWord = word;
+      stateRef.current.currentWord = text;
 
       utterance.onend = () => {
-        if (stateRef.current.currentWord === word) {
+        if (stateRef.current.currentWord === text) {
           stateRef.current.isPlaying = false;
           stateRef.current.currentWord = null;
         }
-        resolve();
       };
 
       utterance.onerror = () => {
         stateRef.current.isPlaying = false;
         stateRef.current.currentWord = null;
-        resolve();
       };
 
       speechSynthesis.speak(utterance);
-    });
-  }, [cancelCurrentAudio]);
+    },
+    [cancelCurrentAudio],
+  );
 
-  const playExample = useCallback((example: string) => {
-    return new Promise<void>((resolve) => {
-      cancelCurrentAudio();
+  const playWord = useCallback(
+    (word: string) => {
+      return new Promise<void>((resolve) => {
+        cancelCurrentAudio();
 
-      const utterance = new SpeechSynthesisUtterance(example);
-      utterance.lang = 'en-US';
-      utterance.rate = 0.8;
+        const utterance = new SpeechSynthesisUtterance(word);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
 
-      stateRef.current.isPlaying = true;
-      stateRef.current.currentWord = example;
+        stateRef.current.isPlaying = true;
+        stateRef.current.currentWord = word;
 
-      utterance.onend = () => {
-        if (stateRef.current.currentWord === example) {
+        utterance.onend = () => {
+          if (stateRef.current.currentWord === word) {
+            stateRef.current.isPlaying = false;
+            stateRef.current.currentWord = null;
+          }
+          resolve();
+        };
+
+        utterance.onerror = () => {
           stateRef.current.isPlaying = false;
           stateRef.current.currentWord = null;
-        }
-        resolve();
-      };
+          resolve();
+        };
 
-      utterance.onerror = () => {
-        stateRef.current.isPlaying = false;
-        stateRef.current.currentWord = null;
-        resolve();
-      };
+        speechSynthesis.speak(utterance);
+      });
+    },
+    [cancelCurrentAudio],
+  );
 
-      speechSynthesis.speak(utterance);
-    });
-  }, [cancelCurrentAudio]);
+  const playExample = useCallback(
+    (example: string) => {
+      return new Promise<void>((resolve) => {
+        cancelCurrentAudio();
+
+        const utterance = new SpeechSynthesisUtterance(example);
+        utterance.lang = 'en-US';
+        utterance.rate = 0.8;
+
+        stateRef.current.isPlaying = true;
+        stateRef.current.currentWord = example;
+
+        utterance.onend = () => {
+          if (stateRef.current.currentWord === example) {
+            stateRef.current.isPlaying = false;
+            stateRef.current.currentWord = null;
+          }
+          resolve();
+        };
+
+        utterance.onerror = () => {
+          stateRef.current.isPlaying = false;
+          stateRef.current.currentWord = null;
+          resolve();
+        };
+
+        speechSynthesis.speak(utterance);
+      });
+    },
+    [cancelCurrentAudio],
+  );
 
   const preloadVoice = useCallback(() => {
     if (speechSynthesis.getVoices().length === 0) {

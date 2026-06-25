@@ -1,6 +1,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { User, BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Trash2, Download, Upload, Sun, Moon, Clock, Flame, Award, Target, RotateCcw, Play, Volume2, BookMarked, CheckCircle, LogOut, Users, X } from 'lucide-react';
+import {
+  User,
+  BookOpen,
+  Headphones,
+  FileText,
+  PenTool,
+  FileQuestion,
+  Gamepad2,
+  Trash2,
+  Download,
+  Upload,
+  Sun,
+  Moon,
+  Clock,
+  Flame,
+  Award,
+  Target,
+  RotateCcw,
+  Play,
+  Volume2,
+  BookMarked,
+  CheckCircle,
+  LogOut,
+  Users,
+  X,
+} from 'lucide-react';
 import { useAppStore, useAuthStore } from '../store/useAppStore';
 import { words, wordCategories } from '../data/words';
 
@@ -9,7 +34,24 @@ type TabType = 'stats' | 'wrongAnswers' | 'wrongBook' | 'translationBook' | 'set
 export const Profile = () => {
   const [activeTab, setActiveTab] = useState<TabType>('stats');
   const navigate = useNavigate();
-  const { userProgress, wordProgress, wrongAnswers, wrongBook, translationWrongBook, removeWrongAnswer, clearWrongAnswers, exportData, importData, theme, toggleTheme, removeFromWrongBook, removeFromTranslationWrongBook, clearTranslationWrongBook, markWordLearned, history } = useAppStore();
+  const {
+    userProgress,
+    wordProgress,
+    wrongAnswers,
+    wrongBook,
+    translationWrongBook,
+    removeWrongAnswer,
+    clearWrongAnswers,
+    exportData,
+    importData,
+    theme,
+    toggleTheme,
+    removeFromWrongBook,
+    removeFromTranslationWrongBook,
+    clearTranslationWrongBook,
+    markWordLearned,
+    history,
+  } = useAppStore();
   const { currentUser, users, logout, deleteUser, switchUser } = useAuthStore();
   const [showImportModal, setShowImportModal] = useState(false);
   const [importDataText, setImportDataText] = useState('');
@@ -168,7 +210,9 @@ export const Profile = () => {
           >
             翻译错题本
             {translationWrongBook.length > 0 && (
-              <span className="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">{translationWrongBook.length}</span>
+              <span className="ml-1 bg-red-500 text-white text-xs px-2 py-0.5 rounded-full">
+                {translationWrongBook.length}
+              </span>
             )}
           </button>
           <button
@@ -194,7 +238,9 @@ export const Profile = () => {
                 <User className="w-10 h-10 text-white" />
               </div>
               <div>
-                <h2 className="text-xl font-bold text-white">{currentUser?.username || '学习者'}</h2>
+                <h2 className="text-xl font-bold text-white">
+                  {currentUser?.username || '学习者'}
+                </h2>
                 <p className="text-white/70">四级英语学习中...</p>
               </div>
             </div>
@@ -234,12 +280,42 @@ export const Profile = () => {
             <h3 className="text-lg font-bold text-white mb-4">模块进度</h3>
             <div className="space-y-4">
               {[
-                { id: 'words', label: '单词学习', icon: BookOpen, progress: userProgress.moduleProgress.words },
-                { id: 'listening', label: '听力训练', icon: Headphones, progress: userProgress.moduleProgress.listening },
-                { id: 'reading', label: '阅读练习', icon: FileText, progress: userProgress.moduleProgress.reading },
-                { id: 'writing', label: '写作翻译', icon: PenTool, progress: userProgress.moduleProgress.writing },
-                { id: 'exam', label: '真题模拟', icon: FileQuestion, progress: userProgress.moduleProgress.exam },
-                { id: 'games', label: '互动游戏', icon: Gamepad2, progress: userProgress.moduleProgress.games },
+                {
+                  id: 'words',
+                  label: '单词学习',
+                  icon: BookOpen,
+                  progress: userProgress.moduleProgress.words,
+                },
+                {
+                  id: 'listening',
+                  label: '听力训练',
+                  icon: Headphones,
+                  progress: userProgress.moduleProgress.listening,
+                },
+                {
+                  id: 'reading',
+                  label: '阅读练习',
+                  icon: FileText,
+                  progress: userProgress.moduleProgress.reading,
+                },
+                {
+                  id: 'writing',
+                  label: '写作翻译',
+                  icon: PenTool,
+                  progress: userProgress.moduleProgress.writing,
+                },
+                {
+                  id: 'exam',
+                  label: '真题模拟',
+                  icon: FileQuestion,
+                  progress: userProgress.moduleProgress.exam,
+                },
+                {
+                  id: 'games',
+                  label: '互动游戏',
+                  icon: Gamepad2,
+                  progress: userProgress.moduleProgress.games,
+                },
               ].map((item) => {
                 const Icon = item.icon;
                 return (
@@ -293,7 +369,11 @@ export const Profile = () => {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         <span className="px-2 py-1 bg-white/10 rounded text-white/70 text-sm">
-                          {answer.type === 'listening' ? '听力' : answer.type === 'reading' ? '阅读' : '真题'}
+                          {answer.type === 'listening'
+                            ? '听力'
+                            : answer.type === 'reading'
+                              ? '阅读'
+                              : '真题'}
                         </span>
                       </div>
                       <p className="text-white/90 mb-2">{answer.question}</p>
@@ -337,7 +417,9 @@ export const Profile = () => {
                   复习错题
                 </button>
                 <button
-                  onClick={() => wrongBookWords.forEach((word) => word && removeFromWrongBook(word.id))}
+                  onClick={() =>
+                    wrongBookWords.forEach((word) => word && removeFromWrongBook(word.id))
+                  }
                   className="flex items-center gap-2 px-4 py-2 bg-red-500/30 text-red-300 rounded-lg hover:bg-red-500/40 transition-all"
                 >
                   <Trash2 className="w-4 h-4" />
@@ -370,7 +452,9 @@ export const Profile = () => {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-2">
-                          <span className="text-white font-english font-bold text-lg">{word.word}</span>
+                          <span className="text-white font-english font-bold text-lg">
+                            {word.word}
+                          </span>
                           <button
                             onClick={() => {
                               const utterance = new SpeechSynthesisUtterance(word.word);
@@ -512,7 +596,11 @@ export const Profile = () => {
               className="w-full flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-all"
             >
               <div className="flex items-center gap-3">
-                {theme === 'light' ? <Moon className="w-6 h-6 text-white/70" /> : <Sun className="w-6 h-6 text-white/70" />}
+                {theme === 'light' ? (
+                  <Moon className="w-6 h-6 text-white/70" />
+                ) : (
+                  <Sun className="w-6 h-6 text-white/70" />
+                )}
                 <span className="text-white">主题切换</span>
               </div>
               <span className="text-white/70">{theme === 'light' ? '亮色模式' : '暗黑模式'}</span>
@@ -564,14 +652,16 @@ export const Profile = () => {
               <Users className="w-5 h-5 text-accent-400" />
               账号管理
             </h3>
-            
+
             <div className="bg-gradient-to-r from-primary-500/20 to-accent-500/20 rounded-xl p-4 mb-6">
               <div className="flex items-center justify-between">
                 <div>
                   <p className="text-white/70 text-sm">当前登录</p>
                   <p className="text-white font-bold text-lg">{currentUser?.username}</p>
                 </div>
-                <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-full text-sm">在线</span>
+                <span className="px-3 py-1 bg-green-500/30 text-green-300 rounded-full text-sm">
+                  在线
+                </span>
               </div>
             </div>
 
@@ -587,11 +677,13 @@ export const Profile = () => {
                   }`}
                 >
                   <div className="flex items-center gap-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      user.id === currentUser?.id
-                        ? 'bg-gradient-to-r from-primary-500 to-accent-500'
-                        : 'bg-white/10'
-                    }`}>
+                    <div
+                      className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                        user.id === currentUser?.id
+                          ? 'bg-gradient-to-r from-primary-500 to-accent-500'
+                          : 'bg-white/10'
+                      }`}
+                    >
                       <User className="w-5 h-5 text-white" />
                     </div>
                     <div>

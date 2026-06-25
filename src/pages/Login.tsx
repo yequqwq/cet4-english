@@ -132,7 +132,10 @@ export const Login = () => {
             </div>
           )}
 
-          <button type="submit" className="btn-primary w-full flex items-center justify-center gap-2">
+          <button
+            type="submit"
+            className="btn-primary w-full flex items-center justify-center gap-2"
+          >
             {isLogin ? '登录' : '注册'}
             <ArrowRight className="w-5 h-5" />
           </button>

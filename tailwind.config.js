@@ -1,11 +1,11 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  darkMode: "class",
-  content: ["./index.html", "./src/**/*.{js,ts,jsx,tsx}"],
+  darkMode: 'class',
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     container: {
       center: true,
-      padding: "1rem",
+      padding: '1rem',
     },
     extend: {
       colors: {
@@ -45,15 +45,15 @@ export default {
         english: ['"Poppins"', '"Roboto"', 'sans-serif'],
       },
       animation: {
-        'flip': 'flip 0.6s ease-in-out',
+        flip: 'flip 0.6s ease-in-out',
         'bounce-in': 'bounceIn 0.5s ease-out',
         'fade-in': 'fadeIn 0.5s ease-out',
         'slide-up': 'slideUp 0.5s ease-out',
         'slide-right': 'slideRight 0.5s ease-out',
         'pulse-glow': 'pulseGlow 2s ease-in-out infinite',
-        'float': 'float 3s ease-in-out infinite',
-        'ripple': 'ripple 0.6s ease-out',
-        'confetti': 'confetti 1s ease-out',
+        float: 'float 3s ease-in-out infinite',
+        ripple: 'ripple 0.6s ease-out',
+        confetti: 'confetti 1s ease-out',
         'spin-slow': 'spin 3s linear infinite',
         'progress-flow': 'progressFlow 2s linear infinite',
       },
@@ -102,13 +102,13 @@ export default {
         },
       },
       perspective: {
-        '1000': '1000px',
+        1000: '1000px',
       },
       transformStyle: {
         'preserve-3d': 'preserve-3d',
       },
       backfaceVisibility: {
-        'hidden': 'hidden',
+        hidden: 'hidden',
       },
     },
   },

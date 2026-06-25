@@ -1,7 +1,15 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useAppStore } from '../store/useAppStore';
 import { words } from '../data/words';
-import { BookOpen, CheckCircle, Clock, XCircle, PlayCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import {
+  BookOpen,
+  CheckCircle,
+  Clock,
+  XCircle,
+  PlayCircle,
+  ChevronDown,
+  ChevronUp,
+} from 'lucide-react';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 
 export const VocabBook = () => {
@@ -11,28 +19,28 @@ export const VocabBook = () => {
   const { speak } = useAudioPlayer();
 
   const toggleCategory = (category: string) => {
-    setExpandedCategories(prev => ({
+    setExpandedCategories((prev) => ({
       ...prev,
-      [category]: !prev[category]
+      [category]: !prev[category],
     }));
   };
 
-  const filteredWords = words.filter(w => w.difficulty === activeTab);
+  const filteredWords = words.filter((w) => w.difficulty === activeTab);
 
   const stats = {
     total: filteredWords.length,
-    mastered: filteredWords.filter(w => {
+    mastered: filteredWords.filter((w) => {
       const progress = wordProgress[w.id];
       return progress && progress.mastery >= 5;
     }).length,
-    learning: filteredWords.filter(w => {
+    learning: filteredWords.filter((w) => {
       const progress = wordProgress[w.id];
       return progress && progress.mastery > 0 && progress.mastery < 5;
     }).length,
-    new: filteredWords.filter(w => {
+    new: filteredWords.filter((w) => {
       const progress = wordProgress[w.id];
       return !progress || progress.mastery === 0;
-    }).length
+    }).length,
   };
 
   const getWordStatus = (wordId: string) => {
@@ -46,26 +54,29 @@ export const VocabBook = () => {
     speak(word);
   };
 
-  const groupedByCategory = filteredWords.reduce((acc, word) => {
-    if (!acc[word.category]) {
-      acc[word.category] = [];
-    }
-    acc[word.category].push(word);
-    return acc;
-  }, {} as Record<string, typeof words>);
+  const groupedByCategory = filteredWords.reduce(
+    (acc, word) => {
+      if (!acc[word.category]) {
+        acc[word.category] = [];
+      }
+      acc[word.category].push(word);
+      return acc;
+    },
+    {} as Record<string, typeof words>,
+  );
 
   const categoryNames: Record<string, string> = {
     campus: '校园生活',
     tech: '科技技术',
     culture: '文化社会',
     environment: '环境自然',
-    economy: '经济商业'
+    economy: '经济商业',
   };
 
   const tabs = [
     { key: 'cet4', label: '四级词汇', color: 'bg-gradient-to-r from-green-400 to-green-600' },
     { key: 'cet6', label: '六级词汇', color: 'bg-gradient-to-r from-orange-400 to-orange-600' },
-    { key: 'kaoyan', label: '考研词汇', color: 'bg-gradient-to-r from-purple-400 to-purple-600' }
+    { key: 'kaoyan', label: '考研词汇', color: 'bg-gradient-to-r from-purple-400 to-purple-600' },
   ] as const;
 
   return (
@@ -100,7 +111,7 @@ export const VocabBook = () => {
       </div>
 
       <div className="flex gap-2 mb-6">
-        {tabs.map(tab => (
+        {tabs.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
@@ -123,7 +134,9 @@ export const VocabBook = () => {
               className="w-full flex items-center justify-between p-4 hover:bg-white/5 transition-colors"
             >
               <div className="flex items-center gap-3">
-                <span className="text-lg font-medium text-white">{categoryNames[category] || category}</span>
+                <span className="text-lg font-medium text-white">
+                  {categoryNames[category] || category}
+                </span>
                 <span className="text-white/40 text-sm">{categoryWords.length} 个单词</span>
               </div>
               {expandedCategories[category] ? (
@@ -136,7 +149,7 @@ export const VocabBook = () => {
             {expandedCategories[category] && (
               <div className="border-t border-white/10">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 p-4">
-                  {categoryWords.map(word => {
+                  {categoryWords.map((word) => {
                     const status = getWordStatus(word.id);
                     const progress = wordProgress[word.id];
                     const mastery = progress?.mastery || 0;
@@ -148,8 +161,8 @@ export const VocabBook = () => {
                           status === 'mastered'
                             ? 'bg-green-500/20 border border-green-500/30'
                             : status === 'learning'
-                            ? 'bg-yellow-500/20 border border-yellow-500/30'
-                            : 'bg-white/10 border border-white/10'
+                              ? 'bg-yellow-500/20 border border-yellow-500/30'
+                              : 'bg-white/10 border border-white/10'
                         }`}
                       >
                         <div className="flex items-start justify-between gap-2">

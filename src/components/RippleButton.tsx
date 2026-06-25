@@ -7,7 +7,12 @@ interface RippleButtonProps {
   type?: 'button' | 'submit' | 'reset';
 }
 
-export const RippleButton = ({ children, onClick, className = '', type = 'button' }: RippleButtonProps) => {
+export const RippleButton = ({
+  children,
+  onClick,
+  className = '',
+  type = 'button',
+}: RippleButtonProps) => {
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
 
   const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
@@ -27,11 +32,7 @@ export const RippleButton = ({ children, onClick, className = '', type = 'button
   };
 
   return (
-    <button
-      type={type}
-      onClick={handleClick}
-      className={`relative overflow-hidden ${className}`}
-    >
+    <button type={type} onClick={handleClick} className={`relative overflow-hidden ${className}`}>
       {children}
       {ripples.map((ripple) => (
         <span

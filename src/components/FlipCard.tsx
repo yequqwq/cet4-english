@@ -12,7 +12,14 @@ interface FlipCardProps {
   currentMastery: number;
 }
 
-export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, currentMastery }: FlipCardProps) => {
+export const FlipCard = ({
+  word,
+  onNext,
+  onPrev,
+  onMasteryChange,
+  onMarkWrong,
+  currentMastery,
+}: FlipCardProps) => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [feedback, setFeedback] = useState<'know' | 'dontknow' | null>(null);
   const { playWord, playExample, cancelCurrentAudio } = useAudioPlayer();
@@ -68,11 +75,21 @@ export const FlipCard = ({ word, onNext, onPrev, onMasteryChange, onMarkWrong, c
   return (
     <div className="w-full max-w-md mx-auto">
       {feedback && (
-        <div className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300 ${feedback === 'know' ? 'bg-green-500/30' : 'bg-red-500/30'}`}>
-          <div className={`text-9xl animate-bounce-in ${feedback === 'know' ? 'text-green-400' : 'text-red-400'}`}>
-            {feedback === 'know' ? <Check className="w-32 h-32" /> : <span className="text-6xl">🔊</span>}
+        <div
+          className={`fixed inset-0 flex items-center justify-center z-50 pointer-events-none transition-all duration-300 ${feedback === 'know' ? 'bg-green-500/30' : 'bg-red-500/30'}`}
+        >
+          <div
+            className={`text-9xl animate-bounce-in ${feedback === 'know' ? 'text-green-400' : 'text-red-400'}`}
+          >
+            {feedback === 'know' ? (
+              <Check className="w-32 h-32" />
+            ) : (
+              <span className="text-6xl">🔊</span>
+            )}
           </div>
-          <p className={`absolute bottom-1/3 text-2xl font-bold ${feedback === 'know' ? 'text-green-400' : 'text-red-400'}`}>
+          <p
+            className={`absolute bottom-1/3 text-2xl font-bold ${feedback === 'know' ? 'text-green-400' : 'text-red-400'}`}
+          >
             {feedback === 'know' ? '太棒了！' : '播放例句中...'}
           </p>
         </div>

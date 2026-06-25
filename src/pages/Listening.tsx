@@ -94,7 +94,9 @@ export const Listening = () => {
         <div className="glass-card p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-4">
-              <span className="text-white/70">第 {currentIndex + 1} / {questions.length} 题</span>
+              <span className="text-white/70">
+                第 {currentIndex + 1} / {questions.length} 题
+              </span>
               <span className="text-white/70">得分: {score}</span>
             </div>
             <button
@@ -113,11 +115,17 @@ export const Listening = () => {
                 disabled={isPlaying}
                 className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isPlaying ? 'bg-green-500' : 'bg-gradient-to-r from-primary-500 to-accent-500 hover:scale-110'}`}
               >
-                {isPlaying ? <Pause className="w-8 h-8 text-white" /> : <Play className="w-8 h-8 text-white ml-1" />}
+                {isPlaying ? (
+                  <Pause className="w-8 h-8 text-white" />
+                ) : (
+                  <Play className="w-8 h-8 text-white ml-1" />
+                )}
               </button>
               <div className="flex-1">
                 <p className="text-white/70 text-sm mb-2">点击播放音频</p>
-                <p className="text-white font-english whitespace-pre-line">{currentQuestion?.audioText}</p>
+                <p className="text-white font-english whitespace-pre-line">
+                  {currentQuestion?.audioText}
+                </p>
               </div>
             </div>
           </div>
@@ -129,7 +137,7 @@ export const Listening = () => {
                 const isCorrect = index === currentQuestion.answer;
                 const isSelected = selectedAnswer === index;
                 let optionClass = 'bg-white/5 hover:bg-white/10 border-white/20';
-                
+
                 if (showResult) {
                   if (isCorrect) {
                     optionClass = 'bg-green-500/30 border-green-500';
@@ -137,7 +145,8 @@ export const Listening = () => {
                     optionClass = 'bg-red-500/30 border-red-500';
                   }
                 } else if (isSelected) {
-                  optionClass = 'bg-gradient-to-r from-primary-500/30 to-accent-500/30 border-primary-500';
+                  optionClass =
+                    'bg-gradient-to-r from-primary-500/30 to-accent-500/30 border-primary-500';
                 }
 
                 return (
@@ -152,7 +161,9 @@ export const Listening = () => {
                     </span>
                     <span className="text-white flex-1 text-left">{option}</span>
                     {showResult && isCorrect && <Check className="w-6 h-6 text-green-500" />}
-                    {showResult && isSelected && !isCorrect && <X className="w-6 h-6 text-red-500" />}
+                    {showResult && isSelected && !isCorrect && (
+                      <X className="w-6 h-6 text-red-500" />
+                    )}
                   </button>
                 );
               })}

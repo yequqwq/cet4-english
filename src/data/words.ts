@@ -174,7 +174,7 @@ export const words: Word[] = [
     word: 'affect',
     phonetic: '/əˈfekt/',
     meaning: 'vt. 影响；感动；vi. 倾向',
-    example: 'Weather can affect people\'s mood.',
+    example: "Weather can affect people's mood.",
     synonyms: 'influence, impact, touch',
     tip: '记忆技巧：af(向)+fect(做) → 对...做 → 影响',
     category: 'environment',
@@ -218,7 +218,7 @@ export const words: Word[] = [
     word: 'alarm',
     phonetic: '/əˈlɑːm/',
     meaning: 'n. 警报；闹钟；vt. 警告；使惊恐',
-    example: 'Set the alarm for 7 o\'clock tomorrow morning.',
+    example: "Set the alarm for 7 o'clock tomorrow morning.",
     synonyms: 'warning, alert, danger',
     tip: '记忆技巧：al(加强)+arm(武器) → 拿起武器 → 警报',
     category: 'tech',
@@ -1033,7 +1033,7 @@ export const words: Word[] = [
     word: 'engage',
     phonetic: '/ɪnˈɡeɪdʒ/',
     meaning: 'v. 从事；吸引；雇佣；订婚',
-    example: 'The topic engages students\' attention.',
+    example: "The topic engages students' attention.",
     synonyms: 'involve, occupy, employ',
     tip: '记忆技巧：en(使)+gage(保证) → 使保证 → 使从事',
     category: 'campus',
@@ -1286,7 +1286,7 @@ export const words: Word[] = [
     word: 'evaluate',
     phonetic: '/ɪˈvæljueɪt/',
     meaning: 'vt. 评价；评估；估价',
-    example: 'Teachers evaluate students\' progress.',
+    example: "Teachers evaluate students' progress.",
     synonyms: 'assess, judge, appraise',
     tip: '记忆技巧：e(出)+valu(价值)+ate → 给出价值 → 评价',
     category: 'campus',
@@ -1330,7 +1330,7 @@ export const words: Word[] = [
     word: 'exaggerate',
     phonetic: '/ɪɡˈzædʒəreɪt/',
     meaning: 'v. 夸张；夸大；言过其实',
-    example: 'Don\'t exaggerate the problem.',
+    example: "Don't exaggerate the problem.",
     synonyms: 'overstate, magnify, amplify',
     tip: '记忆技巧：ex(出)+agger(堆积)+ate → 堆积出来 → 夸张',
     category: 'campus',
@@ -1638,7 +1638,7 @@ export const words: Word[] = [
     word: 'expose',
     phonetic: '/ɪkˈspəʊz/',
     meaning: 'vt. 暴露；揭露；使曝光',
-    example: 'Don\'t expose your skin to the sun.',
+    example: "Don't expose your skin to the sun.",
     synonyms: 'reveal, uncover, disclose',
     tip: '记忆技巧：ex(出)+pose(放置) → 放出来 → 暴露',
     category: 'campus',
@@ -1924,7 +1924,7 @@ export const words: Word[] = [
     word: 'fault',
     phonetic: '/fɔːlt/',
     meaning: 'n. 故障；过错；缺点',
-    example: 'It\'s not my fault.',
+    example: "It's not my fault.",
     synonyms: 'mistake, error, defect',
     tip: '记忆技巧：fault(缺点)本身即为词根',
     category: 'campus',
@@ -2543,7 +2543,7 @@ export const words: Word[] = [
     word: 'hesitate',
     phonetic: '/ˈhezɪteɪt/',
     meaning: 'v. 犹豫；踌躇',
-    example: 'Don\'t hesitate to ask questions.',
+    example: "Don't hesitate to ask questions.",
     synonyms: 'pause, waver, reluctant',
     tip: '记忆技巧：hes(粘)+itate → 粘住不动 → 犹豫',
     category: 'campus',
@@ -2598,7 +2598,7 @@ export const words: Word[] = [
     word: 'honor',
     phonetic: '/ˈɒnər/',
     meaning: 'n. 荣誉；尊敬；v. 尊敬',
-    example: 'It\'s an honor to meet you.',
+    example: "It's an honor to meet you.",
     synonyms: 'respect, dignity, privilege',
     tip: '记忆技巧：honor(荣誉)本身即为词根',
     category: 'campus',
@@ -3183,7 +3183,7 @@ export const words: Word[] = [
     word: 'inherit',
     phonetic: '/ɪnˈherɪt/',
     meaning: 'vt. 继承；遗传',
-    example: 'She inherited her mother\'s beauty.',
+    example: "She inherited her mother's beauty.",
     synonyms: 'receive, get, acquire',
     tip: '记忆技巧：in(进入)+herit(继承) → 继承',
     category: 'campus',
@@ -3547,7 +3547,7 @@ export const words: Word[] = [
     word: 'interfere',
     phonetic: '/ˌɪntəˈfɪər/',
     meaning: 'v. 干涉；妨碍',
-    example: 'Please don\'t interfere in my work.',
+    example: "Please don't interfere in my work.",
     synonyms: 'intervene, meddle, obstruct',
     tip: '记忆技巧：inter(之间)+fere(打) → 打岔 → 干涉',
     category: 'campus',
@@ -3712,7 +3712,7 @@ export const words: Word[] = [
     word: 'invite',
     phonetic: '/ɪnˈvaɪt/',
     meaning: 'vt. 邀请；招待',
-    example: 'Let\'s invite our friends to dinner.',
+    example: "Let's invite our friends to dinner.",
     synonyms: 'ask, summon, request',
     tip: '记忆技巧：in(向)+vite(邀请) → 邀请',
     category: 'campus',
@@ -12959,7 +12959,7 @@ export const words: Word[] = [
     tip: 'reg(统治)+ular → 规则的',
     category: 'campus',
     difficulty: 'cet4',
-  }
+  },
 ];
 
 export const getWordsByCategory = (category: Word['category']): Word[] => {
@@ -12978,8 +12978,6 @@ export const getRandomWords = (count: number): Word[] => {
 export const searchWords = (query: string): Word[] => {
   const lowerQuery = query.toLowerCase();
   return words.filter(
-    (word) =>
-      word.word.toLowerCase().includes(lowerQuery) ||
-      word.meaning.includes(query)
+    (word) => word.word.toLowerCase().includes(lowerQuery) || word.meaning.includes(query),
   );
 };

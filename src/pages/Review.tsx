@@ -1,11 +1,22 @@
 import { useState, useEffect, useCallback } from 'react';
-import { Brain, Volume2, Check, X, ArrowRight, Calendar, TrendingUp, Clock, Sparkles } from 'lucide-react';
+import {
+  Brain,
+  Volume2,
+  Check,
+  X,
+  ArrowRight,
+  Calendar,
+  TrendingUp,
+  Clock,
+  Sparkles,
+} from 'lucide-react';
 import { words } from '../data/words';
 import { useAppStore } from '../store/useAppStore';
 import { useAudioPlayer } from '../hooks/useAudioPlayer';
 
 export const Review = () => {
-  const { getTodayReviewWords, reviewWord, getReviewStats, addToReviewSchedule, reviewSchedule } = useAppStore();
+  const { getTodayReviewWords, reviewWord, getReviewStats, reviewSchedule } =
+    useAppStore();
   const { playWord } = useAudioPlayer();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [reviewWords, setReviewWords] = useState<string[]>([]);
@@ -18,7 +29,9 @@ export const Review = () => {
     setReviewWords(todayWords);
   }, [getTodayReviewWords]);
 
-  const currentWord = reviewWords[currentIndex] ? words.find(w => w.id === reviewWords[currentIndex]) : null;
+  const currentWord = reviewWords[currentIndex]
+    ? words.find((w) => w.id === reviewWords[currentIndex])
+    : null;
   const stats = getReviewStats();
 
   const handleFlip = () => {
@@ -27,13 +40,13 @@ export const Review = () => {
 
   const handleRemember = useCallback(async () => {
     if (!currentWord) return;
-    
+
     setShowResult(true);
     await playWord(currentWord.word);
-    
+
     reviewWord(currentWord.id, 5); // 5 = 完全记住
-    setSessionStats(prev => ({ ...prev, remembered: prev.remembered + 1 }));
-    
+    setSessionStats((prev) => ({ ...prev, remembered: prev.remembered + 1 }));
+
     setTimeout(() => {
       setShowResult(false);
       setIsFlipped(false);
@@ -45,13 +58,13 @@ export const Review = () => {
 
   const handleForget = useCallback(async () => {
     if (!currentWord) return;
-    
+
     setShowResult(true);
     await playWord(currentWord.word);
-    
+
     reviewWord(currentWord.id, 2); // 2 = 忘记
-    setSessionStats(prev => ({ ...prev, forgot: prev.forgot + 1 }));
-    
+    setSessionStats((prev) => ({ ...prev, forgot: prev.forgot + 1 }));
+
     setTimeout(() => {
       setShowResult(false);
       setIsFlipped(false);
@@ -78,7 +91,7 @@ export const Review = () => {
   const getIntervalDescription = (wordId: string) => {
     const plan = reviewSchedule[wordId];
     if (!plan) return '';
-    
+
     const intervals = {
       1: '第2天',
       2: '第4天',
@@ -86,7 +99,7 @@ export const Review = () => {
       4: '第15天',
       5: '长期记忆',
     };
-    
+
     return intervals[plan.level as keyof typeof intervals] || `等级${plan.level}`;
   };
 
@@ -94,7 +107,7 @@ export const Review = () => {
   const getProgressDescription = (wordId: string) => {
     const plan = reviewSchedule[wordId];
     if (!plan) return '';
-    
+
     return `已复习 ${plan.reviewCount} 次`;
   };
 
@@ -117,18 +130,22 @@ export const Review = () => {
           </div>
           <h2 className="text-2xl font-bold text-white mb-4">今日复习已完成！</h2>
           <p className="text-white/70 mb-8">太棒了！你已经完成了今天的单词复习任务</p>
-          
+
           <div className="grid grid-cols-3 gap-4 max-w-md mx-auto">
             <div className="glass-card p-4">
               <div className="text-2xl font-bold text-green-400">{stats.total}</div>
               <div className="text-white/60 text-sm">总词汇</div>
             </div>
             <div className="glass-card p-4">
-              <div className="text-2xl font-bold text-blue-400">{Object.keys(reviewSchedule).filter(id => {
-                const plan = reviewSchedule[id];
-                const today = new Date().toISOString().split('T')[0];
-                return plan.lastReviewDate === today;
-              }).length}</div>
+              <div className="text-2xl font-bold text-blue-400">
+                {
+                  Object.keys(reviewSchedule).filter((id) => {
+                    const plan = reviewSchedule[id];
+                    const today = new Date().toISOString().split('T')[0];
+                    return plan.lastReviewDate === today;
+                  }).length
+                }
+              </div>
               <div className="text-white/60 text-sm">今日已复习</div>
             </div>
             <div className="glass-card p-4">
@@ -188,7 +205,9 @@ export const Review = () => {
         <div className="flex items-center gap-4">
           <div className="glass-card px-4 py-2 flex items-center gap-2">
             <Calendar className="w-4 h-4 text-purple-400" />
-            <span className="text-white/70">{currentIndex + 1}/{reviewWords.length}</span>
+            <span className="text-white/70">
+              {currentIndex + 1}/{reviewWords.length}
+            </span>
           </div>
         </div>
       </div>
@@ -233,12 +252,12 @@ export const Review = () => {
               >
                 <Volume2 className="w-6 h-6 text-white" />
               </button>
-              
+
               <h2 className="text-4xl font-bold text-white mb-2 font-english">
                 {currentWord.word}
               </h2>
               <p className="text-lg text-white/70 mb-4">{currentWord.phonetic}</p>
-              
+
               {isFlipped && (
                 <div className="w-full mt-4 space-y-4 animate-fade-in">
                   <div className="bg-white/10 rounded-lg p-4">
@@ -265,10 +284,8 @@ export const Review = () => {
                   </div>
                 </div>
               )}
-              
-              {!isFlipped && (
-                <p className="text-white/50 mt-4">点击卡片查看释义</p>
-              )}
+
+              {!isFlipped && <p className="text-white/50 mt-4">点击卡片查看释义</p>}
             </div>
           </div>
 

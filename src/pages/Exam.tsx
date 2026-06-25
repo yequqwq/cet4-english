@@ -169,15 +169,30 @@ export const Exam = () => {
               {exam?.questions.map((q, index) => (
                 <div key={q.id} className="bg-white/5 rounded-xl p-4">
                   <div className="flex items-center gap-3 mb-2">
-                    <span className={`w-8 h-8 rounded-full flex items-center justify-center ${answers[index] === q.answer ? 'bg-green-500' : 'bg-red-500'}`}>
-                      {answers[index] === q.answer ? <Check className="w-5 h-5 text-white" /> : <X className="w-5 h-5 text-white" />}
+                    <span
+                      className={`w-8 h-8 rounded-full flex items-center justify-center ${answers[index] === q.answer ? 'bg-green-500' : 'bg-red-500'}`}
+                    >
+                      {answers[index] === q.answer ? (
+                        <Check className="w-5 h-5 text-white" />
+                      ) : (
+                        <X className="w-5 h-5 text-white" />
+                      )}
                     </span>
                     <span className="text-white font-medium">第 {index + 1} 题</span>
                   </div>
                   <p className="text-white/90 mb-2">{q.question}</p>
                   <div className="flex gap-4 text-sm">
-                    <span className="text-white/70">你的答案: <span className={answers[index] === q.answer ? 'text-green-400' : 'text-red-400'}>{answers[index]}</span></span>
-                    <span className="text-white/70">正确答案: <span className="text-green-400">{q.answer}</span></span>
+                    <span className="text-white/70">
+                      你的答案:{' '}
+                      <span
+                        className={answers[index] === q.answer ? 'text-green-400' : 'text-red-400'}
+                      >
+                        {answers[index]}
+                      </span>
+                    </span>
+                    <span className="text-white/70">
+                      正确答案: <span className="text-green-400">{q.answer}</span>
+                    </span>
                   </div>
                 </div>
               ))}
@@ -201,7 +216,9 @@ export const Exam = () => {
               {isPaused ? <Play className="w-4 h-4" /> : <Pause className="w-4 h-4" />}
               {isPaused ? '继续' : '暂停'}
             </button>
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeRemaining < 300 ? 'bg-red-500/30 text-red-300' : 'bg-white/10 text-white/70'}`}>
+            <div
+              className={`flex items-center gap-2 px-4 py-2 rounded-full ${timeRemaining < 300 ? 'bg-red-500/30 text-red-300' : 'bg-white/10 text-white/70'}`}
+            >
               <Clock className="w-4 h-4" />
               {formatTime(timeRemaining)}
             </div>
@@ -224,14 +241,18 @@ export const Exam = () => {
         <section className="px-6">
           <div className="glass-card p-6 mb-6">
             <div className="flex items-center justify-between mb-4">
-              <span className="text-white/70">第 {currentQuestion + 1} / {exam?.questions.length} 题</span>
+              <span className="text-white/70">
+                第 {currentQuestion + 1} / {exam?.questions.length} 题
+              </span>
               <span className="text-white/70">
                 已答: {answers.filter((a) => a !== undefined).length} / {exam?.questions.length}
               </span>
             </div>
 
             <div className="mb-6">
-              <p className="text-white font-medium text-lg mb-4">{exam?.questions[currentQuestion]?.question}</p>
+              <p className="text-white font-medium text-lg mb-4">
+                {exam?.questions[currentQuestion]?.question}
+              </p>
               {exam?.questions[currentQuestion]?.options && (
                 <div className="space-y-3">
                   {exam.questions[currentQuestion].options.map((option, index) => {

@@ -1,5 +1,22 @@
 import { useEffect, useState } from 'react';
-import { BookOpen, Headphones, FileText, PenTool, FileQuestion, Gamepad2, Flame, Clock, Award, ChevronRight, Calendar, ArrowRight, AlertCircle, Brain } from 'lucide-react';
+import {
+  BookOpen,
+  Headphones,
+  FileText,
+  PenTool,
+  FileQuestion,
+  Gamepad2,
+  Flame,
+  Clock,
+  Award,
+  ChevronRight,
+  Calendar,
+  ArrowRight,
+  AlertCircle,
+  Brain,
+  TrendingUp,
+  BarChart3,
+} from 'lucide-react';
 import { useAppStore, useAuthStore } from '../store/useAppStore';
 import { ProgressRing } from '../components/ProgressRing';
 import { useNavigate } from 'react-router-dom';
@@ -24,16 +41,22 @@ const moduleMap: Record<string, string> = {
 };
 
 export const Home = () => {
-  const { userProgress, todayTasks, checkIn, isFirstTime, setIsFirstTime, wrongBook, getReviewStats } = useAppStore();
+  const {
+    userProgress,
+    todayTasks,
+    checkIn,
+    isFirstTime,
+    setIsFirstTime,
+    wrongBook,
+    getReviewStats,
+    history,
+  } = useAppStore();
   const { currentUser } = useAuthStore();
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [showConfetti, setShowConfetti] = useState(false);
   const navigate = useNavigate();
 
-  // 错题本单词数量
   const wrongBookCount = wrongBook.length;
-  
-  // 艾宾浩斯复习统计
   const reviewStats = getReviewStats();
   const totalReviewWords = reviewStats.overdue + reviewStats.today;
 
@@ -44,9 +67,7 @@ export const Home = () => {
 
   useEffect(() => {
     if (isFirstTime) {
-      setTimeout(() => {
-        setIsFirstTime(false);
-      }, 5000);
+      setTimeout(() => setIsFirstTime(false), 5000);
     }
   }, [isFirstTime, setIsFirstTime]);
 
@@ -59,14 +80,33 @@ export const Home = () => {
 
   const handleTaskClick = (module: string) => {
     const path = moduleMap[module];
-    if (path) {
-      navigate(path);
-    }
+    if (path) navigate(path);
   };
 
   const progressPercent = Math.min(100, (userProgress.learnedWords / 2000) * 100);
   const completedTasks = todayTasks.filter((t) => t.completed).length;
   const totalTasks = todayTasks.length;
+
+  // 7-day study trend chart
+  const studyTrend = history.length >= 7 ? history.slice(-7) : history;
+  const maxMinutes = Math.max(...studyTrend.map((h) => h.minutes), 1);
+  const chartWidth = 400;
+  const chartHeight = 120;
+  const padding = { top: 10, right: 10, bottom: 25, left: 30 };
+  const innerWidth = chartWidth - padding.left - padding.right;
+  const innerHeight = chartHeight - padding.top - padding.bottom;
+
+  const points = studyTrend.map((h, i) => {
+    const x = padding.left + (i / Math.max(studyTrend.length - 1, 1)) * innerWidth;
+    const y = padding.top + innerHeight - (h.minutes / maxMinutes) * innerHeight;
+    return { x, y, ...h };
+  });
+
+  const polyline = points.map((p) => `${p.x},${p.y}`).join(' ');
+  const areaPath =
+    points.length > 0
+      ? `M${points[0].x},${padding.top + innerHeight} ${points.map((p) => `L${p.x},${p.y}`).join(' ')} L${points[points.length - 1].x},${padding.top + innerHeight} Z`
+      : '';
 
   return (
     <div className="min-h-screen pb-24 md:pb-0 animate-fade-in-up">
@@ -74,11 +114,8 @@ export const Home = () => {
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center animate-fade-in">
           <div className="glass-card p-8 max-w-md mx-4 text-center animate-bounce-in">
             <h2 className="text-2xl font-bold text-white mb-4">欢迎使用四级英语学习应用！</h2>
-            <p className="text-white/80 mb-6">开始您的英语学习之旅，每天进步一点点！</p>
-            <button
-              onClick={() => setIsFirstTime(false)}
-              className="btn-primary"
-            >
+            <p className="text-white/80 mb-6">开始您的英语学习之旅，每天进步一点点</p>
+            <button onClick={() => setIsFirstTime(false)} className="btn-primary">
               开始学习
             </button>
           </div>
@@ -89,7 +126,12 @@ export const Home = () => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-3xl font-bold text-white">
-              {new Date().getHours() < 12 ? '早上好' : new Date().getHours() < 18 ? '下午好' : '晚上好'}，{currentUser?.username || '学习者'}！
+              {new Date().getHours() < 12
+                ? '早上好'
+                : new Date().getHours() < 18
+                  ? '下午好'
+                  : '晚上好'}
+              ，{currentUser?.username || '学习者'}！
             </h1>
             <p className="text-white/70 mt-1">今天也要加油学习哦！</p>
           </div>
@@ -161,11 +203,112 @@ export const Home = () => {
         </div>
       </section>
 
+      {studyTrend.length > 0 && (
+        <section className="px-6 mb-8">
+          <div className="glass-card p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <TrendingUp className="w-5 h-5 text-accent-400" />
+              <h2 className="text-lg font-bold text-white">近 {studyTrend.length} 天学习趋势</h2>
+            </div>
+            <div className="overflow-x-auto">
+              <svg
+                viewBox={`0 0 ${chartWidth} ${chartHeight}`}
+                className="w-full max-w-lg mx-auto"
+                preserveAspectRatio="xMidYMid meet"
+              >
+                <defs>
+                  <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor="#667eea" stopOpacity="0.3" />
+                    <stop offset="100%" stopColor="#667eea" stopOpacity="0.02" />
+                  </linearGradient>
+                </defs>
+                {[0, 0.25, 0.5, 0.75, 1].map((frac) => (
+                  <g key={frac}>
+                    <line
+                      x1={padding.left}
+                      y1={padding.top + innerHeight * (1 - frac)}
+                      x2={chartWidth - padding.right}
+                      y2={padding.top + innerHeight * (1 - frac)}
+                      stroke="rgba(255,255,255,0.08)"
+                      strokeDasharray="4,4"
+                    />
+                    <text
+                      x={padding.left - 5}
+                      y={padding.top + innerHeight * (1 - frac) + 4}
+                      fill="rgba(255,255,255,0.4)"
+                      fontSize="9"
+                      textAnchor="end"
+                    >
+                      {Math.round(maxMinutes * frac)}m
+                    </text>
+                  </g>
+                ))}
+                {areaPath && <path d={areaPath} fill="url(#areaGrad)" />}
+                <polyline
+                  points={polyline}
+                  fill="none"
+                  stroke="#667eea"
+                  strokeWidth="2.5"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
+                {points.map((p, i) => (
+                  <g key={i}>
+                    <circle cx={p.x} cy={p.y} r="4" fill="#667eea" stroke="white" strokeWidth="2" />
+                    <text
+                      x={p.x}
+                      y={chartHeight - 4}
+                      fill="rgba(255,255,255,0.5)"
+                      fontSize="8"
+                      textAnchor="middle"
+                    >
+                      {p.date.slice(5)}
+                    </text>
+                    <text
+                      x={p.x}
+                      y={p.y - 10}
+                      fill="rgba(255,255,255,0.7)"
+                      fontSize="8"
+                      textAnchor="middle"
+                    >
+                      {p.minutes}m
+                    </text>
+                  </g>
+                ))}
+              </svg>
+            </div>
+            <div className="flex justify-around mt-4 text-center">
+              <div className="bg-white/5 rounded-lg px-4 py-2">
+                <p className="text-white/50 text-xs">日均学习</p>
+                <p className="text-white font-bold text-lg">
+                  {Math.round(studyTrend.reduce((a, b) => a + b.minutes, 0) / studyTrend.length)}{' '}
+                  分钟
+                </p>
+              </div>
+              <div className="bg-white/5 rounded-lg px-4 py-2">
+                <p className="text-white/50 text-xs">共学单词</p>
+                <p className="text-white font-bold text-lg">
+                  {studyTrend.reduce((a, b) => a + b.wordsLearned, 0)} 个
+                </p>
+              </div>
+              <div className="bg-white/5 rounded-lg px-4 py-2">
+                <p className="text-white/50 text-xs">复习单词</p>
+                <p className="text-white font-bold text-lg">
+                  {studyTrend.reduce((a, b) => a + b.wordsReviewed, 0)} 个
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       <section className="px-6 mb-8">
         <h2 className="text-xl font-bold text-white mb-4 flex items-center gap-2">
           <BookOpen className="w-6 h-6 text-accent-400" />
           今日任务
-          <span className="text-sm font-normal text-white/50">({completedTasks}/{totalTasks})</span>
+          <span className="text-sm font-normal text-white/50">
+            ({completedTasks}/{totalTasks})
+          </span>
         </h2>
         <div className="glass-card p-4 space-y-4">
           {todayTasks.map((task, index) => (
@@ -175,11 +318,15 @@ export const Home = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => handleTaskClick(task.module)}
             >
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center ${task.completed ? 'bg-green-500' : 'bg-white/20'}`}>
+              <div
+                className={`w-6 h-6 rounded-full flex items-center justify-center ${task.completed ? 'bg-green-500' : 'bg-white/20'}`}
+              >
                 {task.completed && <span className="text-white text-sm">✓</span>}
               </div>
               <div className="flex-1">
-                <p className={`font-medium ${task.completed ? 'text-white/50 line-through' : 'text-white'}`}>
+                <p
+                  className={`font-medium ${task.completed ? 'text-white/50 line-through' : 'text-white'}`}
+                >
                   {task.title}
                 </p>
                 <div className="w-full h-2 bg-white/10 rounded-full mt-2 overflow-hidden">
@@ -190,15 +337,18 @@ export const Home = () => {
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                <span className="text-white/50 text-sm">{task.progress}/{task.target}</span>
-                <ArrowRight className={`w-5 h-5 ${task.completed ? 'text-white/30' : 'text-white/50'}`} />
+                <span className="text-white/50 text-sm">
+                  {task.progress}/{task.target}
+                </span>
+                <ArrowRight
+                  className={`w-5 h-5 ${task.completed ? 'text-white/30' : 'text-white/50'}`}
+                />
               </div>
             </div>
           ))}
         </div>
       </section>
 
-      {/* 错题本入口 */}
       {wrongBookCount > 0 && (
         <section className="px-6 mb-8">
           <button
@@ -213,7 +363,8 @@ export const Home = () => {
                 <div className="text-left">
                   <h3 className="text-xl font-bold text-white mb-1">错题本</h3>
                   <p className="text-white/70">
-                    有 <span className="text-red-400 font-bold text-lg">{wrongBookCount}</span> 个单词需要复习
+                    有<span className="text-red-400 font-bold text-lg">{wrongBookCount}</span>{' '}
+                    个单词需要复习
                   </p>
                 </div>
               </div>
@@ -228,7 +379,6 @@ export const Home = () => {
         </section>
       )}
 
-      {/* 艾宾浩斯复习入口 */}
       {totalReviewWords > 0 && (
         <section className="px-6 mb-8">
           <button
@@ -244,11 +394,23 @@ export const Home = () => {
                   <h3 className="text-xl font-bold text-white mb-1">艾宾浩斯复习</h3>
                   <p className="text-white/70">
                     {reviewStats.overdue > 0 && (
-                      <span>逾期 <span className="text-red-400 font-bold text-lg">{reviewStats.overdue}</span> 个单词 </span>
+                      <span>
+                        逾期{' '}
+                        <span className="text-red-400 font-bold text-lg">
+                          {reviewStats.overdue}
+                        </span>{' '}
+                        个单词
+                      </span>
                     )}
                     {reviewStats.overdue > 0 && reviewStats.today > 0 && <span>，</span>}
                     {reviewStats.today > 0 && (
-                      <span>今日待复习 <span className="text-purple-400 font-bold text-lg">{reviewStats.today}</span> 个</span>
+                      <span>
+                        今日待复习
+                        <span className="text-purple-400 font-bold text-lg">
+                          {reviewStats.today}
+                        </span>{' '}
+                        个
+                      </span>
                     )}
                   </p>
                 </div>
@@ -279,7 +441,9 @@ export const Home = () => {
                 className="glass-card p-6 flex flex-col items-center gap-3 card-hover"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
-                <div className={`w-12 h-12 rounded-full bg-gradient-to-r ${item.color} flex items-center justify-center`}>
+                <div
+                  className={`w-12 h-12 rounded-full bg-gradient-to-r ${item.color} flex items-center justify-center`}
+                >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <span className="text-white font-medium">{item.label}</span>
